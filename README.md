@@ -41,4 +41,4 @@ func main() {
 ## Reference
 
 - [go-chi/httprate](https://github.com/go-chi/httprate)
-    - **Most of rl's rate limit implementations refer to httprate**
+    - **Most of `rl`'s rate limit implementations refer to httprate. Thanks for the simple and clean implementation!**
