@@ -4,6 +4,9 @@ default: test
 
 ci: depsdev test
 
+test:
+	go test ./... -coverprofile=coverage.out -covermode=count
+
 lint:
 	golangci-lint run ./...
 
