@@ -5,7 +5,9 @@ default: test
 ci: depsdev test
 
 test:
-	go test ./... -coverprofile=coverage.out -covermode=count
+	cp go.mod testdata/go_test.mod
+	go mod tidy -modfile=testdata/go_test.mod
+	go test ./... -modfile=testdata/go_test.mod -coverprofile=coverage.out -covermode=count
 
 lint:
 	golangci-lint run ./...
