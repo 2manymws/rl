@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.5.0](https://github.com/k1LoW/rl/compare/v0.4.0...v0.5.0) - 2023-08-27
+### Breaking Changes 🛠
+- More information received when rate limits are exceeded. by @k1LoW in https://github.com/k1LoW/rl/pull/9
+
 ## [v0.4.0](https://github.com/k1LoW/rl/compare/v0.3.0...v0.4.0) - 2023-08-27
 ### Breaking Changes 🛠
 - Remove Limiter.Name by @k1LoW in https://github.com/k1LoW/rl/pull/7
