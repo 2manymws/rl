@@ -25,6 +25,10 @@ func NewLimiter(reqLimit int, keyFunc httprate.KeyFunc) *Limiter {
 	}
 }
 
+func (l *Limiter) Name() string {
+	return "testutil.Limiter"
+}
+
 func (l *Limiter) KeyAndRateLimit(r *http.Request) (string, int, time.Duration, error) {
 	key, err := l.keyFunc(r)
 	if err != nil {
@@ -37,7 +41,7 @@ func (l *Limiter) ShouldSetXRateLimitHeaders(err error) bool {
 	return true
 }
 
-func (l *Limiter) OnRequestLimit() http.HandlerFunc {
+func (l *Limiter) OnRequestLimit(err error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusTooManyRequests)
 		w.Write([]byte("Too many requests"))
