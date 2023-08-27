@@ -1,10 +1,12 @@
 package testutil
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/httprate"
+	"github.com/k1LoW/rl"
 )
 
 type Limiter struct {
@@ -44,7 +46,13 @@ func (l *Limiter) ShouldSetXRateLimitHeaders(err error) bool {
 func (l *Limiter) OnRequestLimit(err error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusTooManyRequests)
-		w.Write([]byte("Too many requests"))
+		le, ok := err.(*rl.LimitError)
+		if !ok {
+			w.Write([]byte("Too many requests"))
+			return
+		}
+		msg := fmt.Sprintf("Too many requests. name: %s, ratelimit: %d req/%s, ratelimit-ramaining: %d, ratelimit-reset: %d", le.LimierName(), le.RequestLimit(), le.WindowLen(), le.RateLimitRemaining(), le.RateLimitReset())
+		w.Write([]byte(msg))
 	}
 }
 

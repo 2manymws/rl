@@ -38,8 +38,8 @@ func (e *LimitError) RequestLimit() int {
 	return e.lh.reqLimit
 }
 
-// RequestWindowLen returns the request window length of the limiter that caused the error.
-func (e *LimitError) RequestWindowLen() time.Duration {
+// WindowLen returns the window length of the limiter that caused the error.
+func (e *LimitError) WindowLen() time.Duration {
 	return e.lh.windowLen
 }
 

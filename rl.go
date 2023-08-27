@@ -132,7 +132,7 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 					if e.lh.limiter.ShouldSetXRateLimitHeaders(err) {
 						w.Header().Set("Retry-After", fmt.Sprintf("%d", int(e.lh.windowLen.Seconds()))) // RFC 6585
 					}
-					e.lh.limiter.OnRequestLimit(e.err)(w, r)
+					e.lh.limiter.OnRequestLimit(e)(w, r)
 					return
 				}
 				http.Error(w, e.Error(), e.statusCode)
