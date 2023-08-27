@@ -37,7 +37,7 @@ func (l *Limiter) KeyAndRateLimit(r *http.Request) (string, int, time.Duration, 
 	return key, l.reqLimit, time.Second, nil
 }
 
-func (l *Limiter) IsXRateLimitHeadersRequired(err error) bool {
+func (l *Limiter) ShouldSetXRateLimitHeaders(err error) bool {
 	return true
 }
 
