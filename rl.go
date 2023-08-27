@@ -12,12 +12,18 @@ import (
 )
 
 type Limiter interface {
+	// Name returns the name of the limiter
 	Name() string
+	// KeyAndRateLimit returns the key and rate limit for the request
 	KeyAndRateLimit(r *http.Request) (key string, reqLimit int, windowLen time.Duration, err error)
-	SetXRateLimitHeaders(err error) bool
+	// IsXRateLimitHeadersRequired returns true if the X-RateLimit headers are required
+	IsXRateLimitHeadersRequired(err error) bool
+	// OnRequestLimit returns the handler to be called when the rate limit is exceeded
 	OnRequestLimit() http.HandlerFunc
 
+	// Get returns the current count for the key and window
 	Get(key string, window time.Time) (count int, err error)
+	// Increment increments the count for the key and window
 	Increment(key string, currentWindow time.Time) error
 }
 
@@ -111,14 +117,14 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 		if err := eg.Wait(); err != nil {
 			// Handle first error
 			if e, ok := err.(*LimitError); ok {
-				if e.lh.limiter.SetXRateLimitHeaders(err) {
+				if e.lh.limiter.IsXRateLimitHeadersRequired(err) {
 					w.Header().Set("X-RateLimit-Limit", fmt.Sprintf("%d", e.lh.reqLimit))
 					w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", e.lh.rateLimitRemaining))
 					w.Header().Set("X-RateLimit-Reset", fmt.Sprintf("%d", e.lh.rateLimitReset))
 				}
 				if errors.Is(e.err, ErrRateLimitExceeded) {
 					// Rate limit exceeded
-					if e.lh.limiter.SetXRateLimitHeaders(err) {
+					if e.lh.limiter.IsXRateLimitHeadersRequired(err) {
 						w.Header().Set("Retry-After", fmt.Sprintf("%d", int(e.lh.windowLen.Seconds()))) // RFC 6585
 					}
 					e.lh.limiter.OnRequestLimit()(w, r)
@@ -133,7 +139,7 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 
 		if len(lhs) > 0 {
 			// Set X-RateLimit-* headers using the first limiter
-			if lhs[0].limiter.SetXRateLimitHeaders(nil) {
+			if lhs[0].limiter.IsXRateLimitHeadersRequired(nil) {
 				w.Header().Set("X-RateLimit-Limit", fmt.Sprintf("%d", lhs[0].reqLimit))
 				w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", lhs[0].rateLimitRemaining))
 				w.Header().Set("X-RateLimit-Reset", fmt.Sprintf("%d", lhs[0].rateLimitReset))

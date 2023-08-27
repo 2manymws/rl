@@ -10,6 +10,8 @@ import (
 	"github.com/k1LoW/rl/testutil"
 )
 
+var _ rl.Limiter = (*testutil.Limiter)(nil)
+
 func TestRL(t *testing.T) {
 	tests := []struct {
 		name         string
