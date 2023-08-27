@@ -31,6 +31,13 @@ func main() {
 }
 ```
 
+## Rate limiting approach
+
+`rl` uses the Sliding Window Counter pattern same as [go-chi/httprate](https://github.com/go-chi/httprate).
+
+- https://blog.cloudflare.com/counting-things-a-lot-of-different-things/
+- https://www.figma.com/blog/an-alternative-approach-to-rate-limiting/
+
 ## Reference
 
 - [go-chi/httprate](https://github.com/go-chi/httprate)
