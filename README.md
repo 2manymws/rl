@@ -1,4 +1,4 @@
-# rl
+# rl [![Go Reference](https://pkg.go.dev/badge/github.com/k1LoW/rl.svg)](https://pkg.go.dev/github.com/k1LoW/rl) ![Coverage](https://raw.githubusercontent.com/k1LoW/octocovs/main/badges/k1LoW/rl/coverage.svg) ![Code to Test Ratio](https://raw.githubusercontent.com/k1LoW/octocovs/main/badges/k1LoW/rl/ratio.svg) ![Test Execution Time](https://raw.githubusercontent.com/k1LoW/octocovs/main/badges/k1LoW/rl/time.svg)
 
 `rl` is a rate limit middleware for multiple limit rules.
 
