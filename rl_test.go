@@ -21,6 +21,7 @@ func TestRL(t *testing.T) {
 	}{
 		{"key by ip", testutil.NewLimiter(10, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, 10},
 		{"key by host", testutil.NewLimiter(10, testutil.KeyByHost), []string{"a.example.com", "b.example.com"}, 20},
+		{"no limit", testutil.NewLimiter(-1, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, 100},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -50,6 +51,9 @@ func TestRL(t *testing.T) {
 						break L
 					}
 					got++
+					if got == 100 { // circuit breaker
+						break L
+					}
 				}
 			}
 			if got != tt.wantReqCount {
