@@ -12,13 +12,15 @@ import (
 )
 
 type Limiter interface {
+	// Name returns the name of the limiter
+	Name() string
 	// KeyAndRateLimit returns the key and rate limit for the request
 	// If the rate limit is negative, the limiter is skipped
 	KeyAndRateLimit(r *http.Request) (key string, reqLimit int, windowLen time.Duration, err error)
 	// ShouldSetXRateLimitHeaders returns true if the X-RateLimit-* headers should be set
 	ShouldSetXRateLimitHeaders(err error) bool
 	// OnRequestLimit returns the handler to be called when the rate limit is exceeded
-	OnRequestLimit() http.HandlerFunc
+	OnRequestLimit(err error) http.HandlerFunc
 
 	// Get returns the current count for the key and window
 	Get(key string, window time.Time) (count int, err error)
@@ -130,7 +132,7 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 					if e.lh.limiter.ShouldSetXRateLimitHeaders(err) {
 						w.Header().Set("Retry-After", fmt.Sprintf("%d", int(e.lh.windowLen.Seconds()))) // RFC 6585
 					}
-					e.lh.limiter.OnRequestLimit()(w, r)
+					e.lh.limiter.OnRequestLimit(e.err)(w, r)
 					return
 				}
 				http.Error(w, e.Error(), e.statusCode)
