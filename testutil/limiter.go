@@ -25,10 +25,6 @@ func NewLimiter(reqLimit int, keyFunc httprate.KeyFunc) *Limiter {
 	}
 }
 
-func (l *Limiter) Name() string {
-	return "testutil.Limiter"
-}
-
 func (l *Limiter) KeyAndRateLimit(r *http.Request) (string, int, time.Duration, error) {
 	key, err := l.keyFunc(r)
 	if err != nil {

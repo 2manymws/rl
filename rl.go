@@ -12,8 +12,6 @@ import (
 )
 
 type Limiter interface {
-	// Name returns the name of the limiter
-	Name() string
 	// KeyAndRateLimit returns the key and rate limit for the request
 	KeyAndRateLimit(r *http.Request) (key string, reqLimit int, windowLen time.Duration, err error)
 	// ShouldSetXRateLimitHeaders returns true if the X-RateLimit-* headers should be set
