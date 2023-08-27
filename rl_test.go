@@ -15,13 +15,12 @@ var _ rl.Limiter = (*testutil.Limiter)(nil)
 func TestRL(t *testing.T) {
 	tests := []struct {
 		name         string
-		keyFunc      httprate.KeyFunc
-		reqLimit     int
+		limiter      rl.Limiter
 		hosts        []string
 		wantReqCount int
 	}{
-		{"key by ip", httprate.KeyByIP, 10, []string{"a.example.com", "b.example.com"}, 10},
-		{"key by host", testutil.KeyByHost, 10, []string{"a.example.com", "b.example.com"}, 20},
+		{"key by ip", testutil.NewLimiter(10, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, 10},
+		{"key by host", testutil.NewLimiter(10, testutil.KeyByHost), []string{"a.example.com", "b.example.com"}, 20},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -29,8 +28,7 @@ func TestRL(t *testing.T) {
 			r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte("Hello, world"))
 			})
-			l := testutil.NewLimiter(tt.reqLimit, tt.keyFunc)
-			m := rl.New(l)
+			m := rl.New(tt.limiter)
 			ts := httptest.NewServer(m(r))
 			t.Cleanup(func() {
 				ts.Close()
