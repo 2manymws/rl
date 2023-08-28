@@ -71,7 +71,7 @@ func newRateLimiter(limiters []Limiter) *rateLimiter {
 func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now().UTC()
-		var lhs []*limitHandler
+		var lastLH *limitHandler
 		eg := new(errgroup.Group)
 		for _, limiter := range rl.limiters {
 			key, reqLimit, windowLen, err := limiter.KeyAndRateLimit(r)
@@ -89,7 +89,7 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 				windowLen: windowLen,
 				limiter:   limiter,
 			}
-			lhs = append(lhs, lh)
+			lastLH = lh
 			eg.Go(func() error {
 				lh.mu.Lock()
 				defer lh.mu.Unlock()
@@ -142,12 +142,12 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 			return
 		}
 
-		if len(lhs) > 0 {
-			// Set X-RateLimit-* headers using the first limiter
-			if lhs[0].limiter.ShouldSetXRateLimitHeaders(nil) {
-				w.Header().Set("X-RateLimit-Limit", fmt.Sprintf("%d", lhs[0].reqLimit))
-				w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", lhs[0].rateLimitRemaining))
-				w.Header().Set("X-RateLimit-Reset", fmt.Sprintf("%d", lhs[0].rateLimitReset))
+		if lastLH != nil {
+			// Set X-RateLimit-* headers using the last limiter
+			if lastLH.limiter.ShouldSetXRateLimitHeaders(nil) {
+				w.Header().Set("X-RateLimit-Limit", fmt.Sprintf("%d", lastLH.reqLimit))
+				w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", lastLH.rateLimitRemaining))
+				w.Header().Set("X-RateLimit-Reset", fmt.Sprintf("%d", lastLH.rateLimitReset))
 			}
 		}
 

@@ -48,6 +48,7 @@ func TestRL(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
+					defer res.Body.Close()
 					if res.StatusCode == http.StatusTooManyRequests {
 						break L
 					}
@@ -61,5 +62,33 @@ func TestRL(t *testing.T) {
 				t.Errorf("got %v want %v", got, tt.wantReqCount)
 			}
 		})
+	}
+}
+
+func BenchmarkRL(b *testing.B) {
+	r := http.NewServeMux()
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello, world"))
+	})
+	m := rl.New(
+		testutil.NewLimiter(10, httprate.KeyByIP),
+		testutil.NewLimiter(10, testutil.KeyByHost),
+	)
+	ts := httptest.NewServer(m(r))
+	b.Cleanup(func() {
+		ts.Close()
+	})
+
+	for i := 0; i < b.N; i++ {
+		req, err := http.NewRequest("GET", ts.URL, nil)
+		if err != nil {
+			b.Fatal(err)
+		}
+		req.Host = "a.example.com"
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			b.Fatal(err)
+		}
+		res.Body.Close()
 	}
 }
