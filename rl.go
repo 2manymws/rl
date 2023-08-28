@@ -156,7 +156,7 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 }
 
 // New returns a new rate limiter middleware.
-// The order of the limitters should be arranged in order of Limitter with strict rate limit to return appropriate X-RateLimit-* headers to the client.
+// The order of the limitters should be arranged in **reverse** order of Limitter with strict rate limit to return appropriate X-RateLimit-* headers to the client.
 func New(limiters ...Limiter) func(next http.Handler) http.Handler {
 	rl := newRateLimiter(limiters)
 	return rl.Handler
