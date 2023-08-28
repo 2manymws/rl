@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.6.0](https://github.com/k1LoW/rl/compare/v0.5.2...v0.6.0) - 2023-08-28
+### Breaking Changes 🛠
+- Provide Limiter with a feature to ignore the next and following Limiters. by @k1LoW in https://github.com/k1LoW/rl/pull/20
+### Fix bug 🐛
+- Should put a default value in the statuscode. by @pyama86 in https://github.com/k1LoW/rl/pull/15
+- WriteHeader() is called before Write(). Also, it is not possible to write the header twice. by @k1LoW in https://github.com/k1LoW/rl/pull/18
+### Other Changes
+- Should not set `X-RateLimit-*` headers when no limit. by @k1LoW in https://github.com/k1LoW/rl/pull/19
+
 ## [v0.5.2](https://github.com/k1LoW/rl/compare/v0.5.1...v0.5.2) - 2023-08-28
 ### Other Changes
 - No non-essential allocations by @pyama86 in https://github.com/k1LoW/rl/pull/14
