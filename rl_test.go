@@ -19,10 +19,12 @@ func TestRL(t *testing.T) {
 		limiter      rl.Limiter
 		hosts        []string
 		wantReqCount int
+		skipper      rl.Skipper
 	}{
-		{"key by ip", testutil.NewLimiter(10, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, 10},
-		{"key by host", testutil.NewLimiter(10, testutil.KeyByHost), []string{"a.example.com", "b.example.com"}, 20},
-		{"no limit", testutil.NewLimiter(-1, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, noLimitReq},
+		{"key by ip", testutil.NewLimiter(10, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, 10, nil},
+		{"key by host", testutil.NewLimiter(10, testutil.KeyByHost), []string{"a.example.com", "b.example.com"}, 20, nil},
+		{"no limit", testutil.NewLimiter(-1, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, noLimitReq, nil},
+		{"with skipper", testutil.NewLimiter(10, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, noLimitReq, func(r *http.Request) bool { return true }},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -30,7 +32,15 @@ func TestRL(t *testing.T) {
 			r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte("Hello, world"))
 			})
-			m := rl.New(tt.limiter)
+			var m func(next http.Handler) http.Handler
+			if tt.skipper != nil {
+				m = rl.NewWithConfig(&rl.Config{
+					Limiters: []rl.Limiter{tt.limiter},
+					Skipper:  tt.skipper,
+				})
+			} else {
+				m = rl.New(tt.limiter)
+			}
 			ts := httptest.NewServer(m(r))
 			t.Cleanup(func() {
 				ts.Close()

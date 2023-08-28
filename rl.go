@@ -38,6 +38,12 @@ type limitHandler struct {
 	mu                 sync.Mutex
 }
 
+type Config struct {
+	Limiters []Limiter
+	// Skipper is the function to skip middleware
+	Skipper Skipper
+}
+
 func (lh *limitHandler) status(now, currentWindow time.Time) (bool, float64, error) {
 	previousWindow := currentWindow.Add(-lh.windowLen)
 
@@ -58,18 +64,25 @@ func (lh *limitHandler) status(now, currentWindow time.Time) (bool, float64, err
 	return true, rate, nil
 }
 
+type Skipper func(r *http.Request) bool
 type rateLimiter struct {
 	limiters []Limiter
+	skipper  Skipper
 }
 
-func newRateLimiter(limiters []Limiter) *rateLimiter {
+func newRateLimiter(limiters []Limiter, skipper Skipper) *rateLimiter {
 	return &rateLimiter{
 		limiters: limiters,
+		skipper:  skipper,
 	}
 }
 
 func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if rl.skipper != nil && rl.skipper(r) {
+			next.ServeHTTP(w, r)
+			return
+		}
 		now := time.Now().UTC()
 		var lastLH *limitHandler
 		eg := new(errgroup.Group)
@@ -158,6 +171,11 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 // New returns a new rate limiter middleware.
 // The order of the limitters should be arranged in **reverse** order of Limitter with strict rate limit to return appropriate X-RateLimit-* headers to the client.
 func New(limiters ...Limiter) func(next http.Handler) http.Handler {
-	rl := newRateLimiter(limiters)
+	rl := newRateLimiter(limiters, nil)
+	return rl.Handler
+}
+
+func NewWithConfig(c *Config) func(next http.Handler) http.Handler {
+	rl := newRateLimiter(c.Limiters, c.Skipper)
 	return rl.Handler
 }
