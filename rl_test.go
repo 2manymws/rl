@@ -13,6 +13,7 @@ import (
 var _ rl.Limiter = (*testutil.Limiter)(nil)
 
 func TestRL(t *testing.T) {
+	const noLimitReq = 100
 	tests := []struct {
 		name         string
 		limiter      rl.Limiter
@@ -21,7 +22,7 @@ func TestRL(t *testing.T) {
 	}{
 		{"key by ip", testutil.NewLimiter(10, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, 10},
 		{"key by host", testutil.NewLimiter(10, testutil.KeyByHost), []string{"a.example.com", "b.example.com"}, 20},
-		{"no limit", testutil.NewLimiter(-1, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, 100},
+		{"no limit", testutil.NewLimiter(-1, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, noLimitReq},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -51,7 +52,7 @@ func TestRL(t *testing.T) {
 						break L
 					}
 					got++
-					if got == 100 { // circuit breaker
+					if got == noLimitReq { // circuit breaker
 						break L
 					}
 				}
