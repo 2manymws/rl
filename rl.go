@@ -122,7 +122,6 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 		if err := eg.Wait(); err != nil {
 			// Handle first error
 			if e, ok := err.(*LimitError); ok {
-				http.Error(w, e.Error(), e.statusCode)
 				if e.lh.limiter.ShouldSetXRateLimitHeaders(err) {
 					w.Header().Set("X-RateLimit-Limit", fmt.Sprintf("%d", e.lh.reqLimit))
 					w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", e.lh.rateLimitRemaining))
@@ -136,6 +135,7 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 					e.lh.limiter.OnRequestLimit(e)(w, r)
 					return
 				}
+				http.Error(w, e.Error(), e.statusCode)
 				return
 			}
 			http.Error(w, err.Error(), http.StatusInternalServerError)
