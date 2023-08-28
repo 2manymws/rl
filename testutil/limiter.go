@@ -45,12 +45,17 @@ func (l *Limiter) Name() string {
 	return "testutil.Limiter"
 }
 
-func (l *Limiter) Rule(r *http.Request) (string, int, time.Duration, bool, error) {
+func (l *Limiter) Rule(r *http.Request) (*rl.Rule, error) {
 	key, err := l.keyFunc(r)
 	if err != nil {
-		return "", 0, 0, l.ignoreAfter(r), err
+		return nil, err
 	}
-	return key, l.reqLimit, time.Second, l.ignoreAfter(r), nil
+	return &rl.Rule{
+		Key:         key,
+		ReqLimit:    l.reqLimit,
+		WindowLen:   time.Second,
+		IgnoreAfter: l.ignoreAfter(r),
+	}, nil
 }
 
 func (l *Limiter) ShouldSetXRateLimitHeaders(err error) bool {
