@@ -9,6 +9,9 @@ test:
 	go mod tidy -modfile=testdata/go_test.mod
 	go test ./... -modfile=testdata/go_test.mod -coverprofile=coverage.out -covermode=count
 
+benchmark:
+	go test -bench . -benchmem -benchtime 10000x
+
 lint:
 	golangci-lint run ./...
 
