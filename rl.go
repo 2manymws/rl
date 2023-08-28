@@ -13,9 +13,14 @@ import (
 
 // Rule is a rate limit rule
 type Rule struct {
-	Key         string
-	ReqLimit    int
-	WindowLen   time.Duration
+	// Key for the rate limit
+	Key string
+	// ReqLimit is the request limit for the window
+	// If ReqLimit is negative, the limiter is skipped
+	ReqLimit int
+	// WindowLen is the length of the window
+	WindowLen time.Duration
+	// IgnoreAfter is true if skip all limiters after this limiter
 	IgnoreAfter bool
 }
 
@@ -23,7 +28,6 @@ type Limiter interface {
 	// Name returns the name of the limiter
 	Name() string
 	// Rule returns the key and rate limit rule for the request
-	// If the rate limit is negative, the limiter is skipped
 	Rule(r *http.Request) (rule *Rule, err error)
 	// ShouldSetXRateLimitHeaders returns true if the X-RateLimit-* headers should be set
 	ShouldSetXRateLimitHeaders(err error) bool
