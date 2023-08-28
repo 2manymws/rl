@@ -18,16 +18,18 @@ func TestRL(t *testing.T) {
 	const noLimitReq = 100
 	tests := []struct {
 		name                 string
-		limiter              rl.Limiter
+		limiters             []rl.Limiter
 		hosts                []string
 		wantReqCount         int
 		wantStatusCode       int
 		hasXRateLimitHeaders bool
 	}{
-		{"key by ip", testutil.NewLimiter(10, httprate.KeyByIP, 0), []string{"a.example.com", "b.example.com"}, 10, http.StatusTooManyRequests, true},
-		{"key by host", testutil.NewLimiter(10, testutil.KeyByHost, 0), []string{"a.example.com", "b.example.com"}, 20, http.StatusTooManyRequests, true},
-		{"no limit", testutil.NewLimiter(-1, httprate.KeyByIP, 0), []string{"a.example.com", "b.example.com"}, noLimitReq, http.StatusTooManyRequests, false},
-		{"set other statusCode", testutil.NewLimiter(10, httprate.KeyByIP, http.StatusOK), []string{"a.example.com", "b.example.com"}, 10, http.StatusOK, true},
+		{"key by ip", []rl.Limiter{testutil.NewLimiter(10, httprate.KeyByIP, 0)}, []string{"a.example.com", "b.example.com"}, 10, http.StatusTooManyRequests, true},
+		{"key by host", []rl.Limiter{testutil.NewLimiter(10, testutil.KeyByHost, 0)}, []string{"a.example.com", "b.example.com"}, 20, http.StatusTooManyRequests, true},
+		{"no limit", []rl.Limiter{testutil.NewLimiter(-1, httprate.KeyByIP, 0)}, []string{"a.example.com", "b.example.com"}, noLimitReq, http.StatusTooManyRequests, false},
+		{"set other statusCode", []rl.Limiter{testutil.NewLimiter(10, httprate.KeyByIP, http.StatusOK)}, []string{"a.example.com", "b.example.com"}, 10, http.StatusOK, true},
+		{"b.example.com is limited", []rl.Limiter{testutil.NewSkipper("a.example.com"), testutil.NewLimiter(10, testutil.KeyByHost, 0)}, []string{"b.example.com"}, 10, http.StatusTooManyRequests, true},
+		{"a.example.com allows unlimited requests", []rl.Limiter{testutil.NewSkipper("a.example.com"), testutil.NewLimiter(10, testutil.KeyByHost, 0)}, []string{"a.example.com"}, noLimitReq, 0, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -35,7 +37,7 @@ func TestRL(t *testing.T) {
 			r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte("Hello, world"))
 			})
-			m := rl.New(tt.limiter)
+			m := rl.New(tt.limiters...)
 			ts := httptest.NewServer(m(r))
 			t.Cleanup(func() {
 				ts.Close()

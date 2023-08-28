@@ -11,12 +11,24 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// Rule is a rate limit rule
+type Rule struct {
+	// Key for the rate limit
+	Key string
+	// ReqLimit is the request limit for the window
+	// If ReqLimit is negative, the limiter is skipped
+	ReqLimit int
+	// WindowLen is the length of the window
+	WindowLen time.Duration
+	// IgnoreAfter is true if skip all limiters after this limiter
+	IgnoreAfter bool
+}
+
 type Limiter interface {
 	// Name returns the name of the limiter
 	Name() string
-	// KeyAndRateLimit returns the key and rate limit for the request
-	// If the rate limit is negative, the limiter is skipped
-	KeyAndRateLimit(r *http.Request) (key string, reqLimit int, windowLen time.Duration, err error)
+	// Rule returns the key and rate limit rule for the request
+	Rule(r *http.Request) (rule *Rule, err error)
 	// ShouldSetXRateLimitHeaders returns true if the X-RateLimit-* headers should be set
 	ShouldSetXRateLimitHeaders(err error) bool
 	// OnRequestLimit returns the handler to be called when the rate limit is exceeded
@@ -74,9 +86,13 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 		var lastLH *limitHandler
 		eg := new(errgroup.Group)
 		for _, limiter := range rl.limiters {
-			key, reqLimit, windowLen, err := limiter.KeyAndRateLimit(r)
-			if reqLimit < 0 {
+			rule, err := limiter.Rule(r)
+			if rule.ReqLimit < 0 {
 				// If the request limit is negative, skip this limiter
+				if rule.IgnoreAfter {
+					// Skip all limiters after this limiter.
+					break
+				}
 				continue
 			}
 			if err != nil {
@@ -84,9 +100,9 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 				return
 			}
 			lh := &limitHandler{
-				key:       key,
-				reqLimit:  reqLimit,
-				windowLen: windowLen,
+				key:       rule.Key,
+				reqLimit:  rule.ReqLimit,
+				windowLen: rule.WindowLen,
 				limiter:   limiter,
 			}
 			lastLH = lh
@@ -116,6 +132,10 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 				}
 				return nil
 			})
+			if rule.IgnoreAfter {
+				// Skip all limiters after this limiter.
+				break
+			}
 		}
 
 		// Wait for all limiters to finish
