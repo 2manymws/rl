@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.5.2](https://github.com/k1LoW/rl/compare/v0.5.1...v0.5.2) - 2023-08-28
+### Other Changes
+- No non-essential allocations by @pyama86 in https://github.com/k1LoW/rl/pull/14
+
 ## [v0.5.1](https://github.com/k1LoW/rl/compare/v0.5.0...v0.5.1) - 2023-08-27
 ### Breaking Changes 🛠
 - Fix LimitError handling by @k1LoW in https://github.com/k1LoW/rl/pull/11
