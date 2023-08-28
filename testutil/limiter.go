@@ -10,20 +10,22 @@ import (
 )
 
 type Limiter struct {
-	counts   map[string]map[time.Time]int
-	reqLimit int
-	keyFunc  httprate.KeyFunc
+	counts     map[string]map[time.Time]int
+	reqLimit   int
+	keyFunc    httprate.KeyFunc
+	statusCode int
 }
 
 func KeyByHost(r *http.Request) (string, error) {
 	return r.Host, nil
 }
 
-func NewLimiter(reqLimit int, keyFunc httprate.KeyFunc) *Limiter {
+func NewLimiter(reqLimit int, keyFunc httprate.KeyFunc, statusCode int) *Limiter {
 	return &Limiter{
-		counts:   map[string]map[time.Time]int{},
-		reqLimit: reqLimit,
-		keyFunc:  keyFunc,
+		counts:     map[string]map[time.Time]int{},
+		reqLimit:   reqLimit,
+		keyFunc:    keyFunc,
+		statusCode: statusCode,
 	}
 }
 
@@ -53,6 +55,9 @@ func (l *Limiter) OnRequestLimit(err error) http.HandlerFunc {
 		}
 		msg := fmt.Sprintf("Too many requests. name: %s, ratelimit: %d req/%s, ratelimit-ramaining: %d, ratelimit-reset: %d", le.LimierName(), le.RequestLimit(), le.WindowLen(), le.RateLimitRemaining(), le.RateLimitReset())
 		w.Write([]byte(msg))
+		if l.statusCode != 0 {
+			w.WriteHeader(l.statusCode)
+		}
 	}
 }
 

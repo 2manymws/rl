@@ -15,14 +15,16 @@ var _ rl.Limiter = (*testutil.Limiter)(nil)
 func TestRL(t *testing.T) {
 	const noLimitReq = 100
 	tests := []struct {
-		name         string
-		limiter      rl.Limiter
-		hosts        []string
-		wantReqCount int
+		name           string
+		limiter        rl.Limiter
+		hosts          []string
+		wantReqCount   int
+		wantStatusCode int
 	}{
-		{"key by ip", testutil.NewLimiter(10, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, 10},
-		{"key by host", testutil.NewLimiter(10, testutil.KeyByHost), []string{"a.example.com", "b.example.com"}, 20},
-		{"no limit", testutil.NewLimiter(-1, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, noLimitReq},
+		{"key by ip", testutil.NewLimiter(10, httprate.KeyByIP, 0), []string{"a.example.com", "b.example.com"}, 10, http.StatusTooManyRequests},
+		{"key by host", testutil.NewLimiter(10, testutil.KeyByHost, 0), []string{"a.example.com", "b.example.com"}, 20, http.StatusTooManyRequests},
+		{"no limit", testutil.NewLimiter(-1, httprate.KeyByIP, 0), []string{"a.example.com", "b.example.com"}, noLimitReq, http.StatusTooManyRequests},
+		{"set other statusCode", testutil.NewLimiter(10, httprate.KeyByIP, http.StatusOK), []string{"a.example.com", "b.example.com"}, 10, http.StatusOK},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -71,8 +73,8 @@ func BenchmarkRL(b *testing.B) {
 		w.Write([]byte("Hello, world"))
 	})
 	m := rl.New(
-		testutil.NewLimiter(10, httprate.KeyByIP),
-		testutil.NewLimiter(10, testutil.KeyByHost),
+		testutil.NewLimiter(10, httprate.KeyByIP, 0),
+		testutil.NewLimiter(10, testutil.KeyByHost, 0),
 	)
 	ts := httptest.NewServer(m(r))
 	b.Cleanup(func() {
