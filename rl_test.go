@@ -56,7 +56,9 @@ func TestRL(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer res.Body.Close()
+					if err := res.Body.Close(); err != nil {
+						t.Fatal(err)
+					}
 					if strings.Contains(string(b), "Too many requests") {
 						if res.StatusCode != tt.wantStatusCode {
 							t.Errorf("got %v want %v", res.StatusCode, tt.wantStatusCode)
