@@ -29,3 +29,19 @@ jobs:
 
       - name: Run octocov
         uses: k1LoW/octocov-action@v0
+  benchmark:
+    name: Benchmark
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+
+      - name: Run benchmark
+        run: make benchmark
