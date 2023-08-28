@@ -15,16 +15,18 @@ var _ rl.Limiter = (*testutil.Limiter)(nil)
 func TestRL(t *testing.T) {
 	const noLimitReq = 100
 	tests := []struct {
-		name         string
-		limiter      rl.Limiter
-		hosts        []string
-		wantReqCount int
-		skipper      rl.Skipper
+		name           string
+		limiter        rl.Limiter
+		hosts          []string
+		wantReqCount   int
+		skipper        rl.Skipper
+		wantStatusCode int
 	}{
-		{"key by ip", testutil.NewLimiter(10, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, 10, nil},
-		{"key by host", testutil.NewLimiter(10, testutil.KeyByHost), []string{"a.example.com", "b.example.com"}, 20, nil},
-		{"no limit", testutil.NewLimiter(-1, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, noLimitReq, nil},
-		{"with skipper", testutil.NewLimiter(10, httprate.KeyByIP), []string{"a.example.com", "b.example.com"}, noLimitReq, func(r *http.Request) bool { return true }},
+		{"key by ip", testutil.NewLimiter(10, httprate.KeyByIP, 0), []string{"a.example.com", "b.example.com"}, 10, nil, http.StatusTooManyRequests},
+		{"key by host", testutil.NewLimiter(10, testutil.KeyByHost, 0), []string{"a.example.com", "b.example.com"}, 20, nil, http.StatusTooManyRequests},
+		{"no limit", testutil.NewLimiter(-1, httprate.KeyByIP, 0), []string{"a.example.com", "b.example.com"}, noLimitReq, nil, http.StatusOK},
+		{"set other statusCode", testutil.NewLimiter(10, httprate.KeyByIP, http.StatusOK), []string{"a.example.com", "b.example.com"}, 10, nil, http.StatusOK},
+		{"with skipper", testutil.NewLimiter(10, httprate.KeyByIP, 0), []string{"a.example.com", "b.example.com"}, noLimitReq, func(r *http.Request) bool { return true }, http.StatusOK},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -81,8 +83,8 @@ func BenchmarkRL(b *testing.B) {
 		w.Write([]byte("Hello, world"))
 	})
 	m := rl.New(
-		testutil.NewLimiter(10, httprate.KeyByIP),
-		testutil.NewLimiter(10, testutil.KeyByHost),
+		testutil.NewLimiter(10, httprate.KeyByIP, 0),
+		testutil.NewLimiter(10, testutil.KeyByHost, 0),
 	)
 	ts := httptest.NewServer(m(r))
 	b.Cleanup(func() {
