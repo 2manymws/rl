@@ -1,8 +1,10 @@
 package rl_test
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/go-chi/httprate"
@@ -50,8 +52,15 @@ func TestRL(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
+					b, err := io.ReadAll(res.Body)
+					if err != nil {
+						t.Fatal(err)
+					}
 					defer res.Body.Close()
-					if res.StatusCode == http.StatusTooManyRequests {
+					if strings.Contains(string(b), "Too many requests") {
+						if res.StatusCode != tt.wantStatusCode {
+							t.Errorf("got %v want %v", res.StatusCode, tt.wantStatusCode)
+						}
 						break L
 					}
 					got++

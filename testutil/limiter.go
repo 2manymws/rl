@@ -47,7 +47,11 @@ func (l *Limiter) ShouldSetXRateLimitHeaders(err error) bool {
 
 func (l *Limiter) OnRequestLimit(err error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusTooManyRequests)
+		if l.statusCode != 0 {
+			w.WriteHeader(l.statusCode)
+		} else {
+			w.WriteHeader(http.StatusTooManyRequests)
+		}
 		le, ok := err.(*rl.LimitError)
 		if !ok {
 			w.Write([]byte("Too many requests"))
@@ -55,9 +59,6 @@ func (l *Limiter) OnRequestLimit(err error) http.HandlerFunc {
 		}
 		msg := fmt.Sprintf("Too many requests. name: %s, ratelimit: %d req/%s, ratelimit-ramaining: %d, ratelimit-reset: %d", le.LimierName(), le.RequestLimit(), le.WindowLen(), le.RateLimitRemaining(), le.RateLimitReset())
 		w.Write([]byte(msg))
-		if l.statusCode != 0 {
-			w.WriteHeader(l.statusCode)
-		}
 	}
 }
 
