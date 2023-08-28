@@ -144,7 +144,7 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 
 		if lastLH != nil {
 			// Set X-RateLimit-* headers using the last limiter
-			if lastLH.limiter.ShouldSetXRateLimitHeaders(nil) {
+			if lastLH.limiter.ShouldSetXRateLimitHeaders(nil) && lastLH.reqLimit >= 0 {
 				w.Header().Set("X-RateLimit-Limit", fmt.Sprintf("%d", lastLH.reqLimit))
 				w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", lastLH.rateLimitRemaining))
 				w.Header().Set("X-RateLimit-Reset", fmt.Sprintf("%d", lastLH.rateLimitReset))
