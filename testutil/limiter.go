@@ -10,10 +10,11 @@ import (
 )
 
 type Limiter struct {
-	counts     map[string]map[time.Time]int
-	reqLimit   int
-	keyFunc    httprate.KeyFunc
-	statusCode int
+	counts      map[string]map[time.Time]int
+	reqLimit    int
+	keyFunc     httprate.KeyFunc
+	statusCode  int
+	ignoreAfter func(*http.Request) bool
 }
 
 func KeyByHost(r *http.Request) (string, error) {
@@ -22,10 +23,21 @@ func KeyByHost(r *http.Request) (string, error) {
 
 func NewLimiter(reqLimit int, keyFunc httprate.KeyFunc, statusCode int) *Limiter {
 	return &Limiter{
-		counts:     map[string]map[time.Time]int{},
-		reqLimit:   reqLimit,
-		keyFunc:    keyFunc,
-		statusCode: statusCode,
+		counts:      map[string]map[time.Time]int{},
+		reqLimit:    reqLimit,
+		keyFunc:     keyFunc,
+		statusCode:  statusCode,
+		ignoreAfter: func(r *http.Request) bool { return false },
+	}
+}
+
+func NewSkipper(hostname string) *Limiter {
+	return &Limiter{
+		counts:      map[string]map[time.Time]int{},
+		reqLimit:    -1,
+		keyFunc:     KeyByHost,
+		statusCode:  0,
+		ignoreAfter: func(r *http.Request) bool { return r.Host == hostname },
 	}
 }
 
@@ -33,12 +45,12 @@ func (l *Limiter) Name() string {
 	return "testutil.Limiter"
 }
 
-func (l *Limiter) KeyAndRateLimit(r *http.Request) (string, int, time.Duration, error) {
+func (l *Limiter) Rule(r *http.Request) (string, int, time.Duration, bool, error) {
 	key, err := l.keyFunc(r)
 	if err != nil {
-		return "", 0, 0, err
+		return "", 0, 0, l.ignoreAfter(r), err
 	}
-	return key, l.reqLimit, time.Second, nil
+	return key, l.reqLimit, time.Second, l.ignoreAfter(r), nil
 }
 
 func (l *Limiter) ShouldSetXRateLimitHeaders(err error) bool {

@@ -14,9 +14,9 @@ import (
 type Limiter interface {
 	// Name returns the name of the limiter
 	Name() string
-	// KeyAndRateLimit returns the key and rate limit for the request
+	// Rule returns the key and rate limit rule for the request
 	// If the rate limit is negative, the limiter is skipped
-	KeyAndRateLimit(r *http.Request) (key string, reqLimit int, windowLen time.Duration, err error)
+	Rule(r *http.Request) (key string, reqLimit int, windowLen time.Duration, ignoreAfter bool, err error)
 	// ShouldSetXRateLimitHeaders returns true if the X-RateLimit-* headers should be set
 	ShouldSetXRateLimitHeaders(err error) bool
 	// OnRequestLimit returns the handler to be called when the rate limit is exceeded
@@ -74,9 +74,13 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 		var lastLH *limitHandler
 		eg := new(errgroup.Group)
 		for _, limiter := range rl.limiters {
-			key, reqLimit, windowLen, err := limiter.KeyAndRateLimit(r)
+			key, reqLimit, windowLen, ignoreAfter, err := limiter.Rule(r)
 			if reqLimit < 0 {
 				// If the request limit is negative, skip this limiter
+				if ignoreAfter {
+					// Skip all limiters after this limiter.
+					break
+				}
 				continue
 			}
 			if err != nil {
@@ -116,6 +120,10 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 				}
 				return nil
 			})
+			if ignoreAfter {
+				// Skip all limiters after this limiter.
+				break
+			}
 		}
 
 		// Wait for all limiters to finish
