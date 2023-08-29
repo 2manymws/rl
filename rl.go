@@ -1,6 +1,7 @@
 package rl
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -84,7 +85,7 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now().UTC()
 		var lastLH *limitHandler
-		eg := new(errgroup.Group)
+		eg, ctx := errgroup.WithContext(context.Background())
 		for _, limiter := range rl.limiters {
 			rule, err := limiter.Rule(r)
 			if rule.ReqLimit < 0 {
@@ -110,10 +111,18 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 				lh.mu.Lock()
 				defer lh.mu.Unlock()
 				currentWindow := now.Truncate(lh.windowLen)
-
 				lh.rateLimitRemaining = 0
 				lh.rateLimitReset = int(currentWindow.Add(lh.windowLen).Unix())
-
+				select {
+				// Check if the request limit already exceeded before calling lh.status()
+				case <-ctx.Done():
+					// Increment must be called even if the request limit is already exceeded
+					if err := lh.limiter.Increment(lh.key, currentWindow); err != nil {
+						return newLimitError(http.StatusInternalServerError, err, lh)
+					}
+					return nil
+				default:
+				}
 				_, rate, err := lh.status(now, currentWindow)
 				if err != nil {
 					return newLimitError(http.StatusPreconditionRequired, err, lh)
