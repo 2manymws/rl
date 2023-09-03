@@ -9,9 +9,10 @@ test:
 	go mod tidy -modfile=testdata/go_test.mod
 	go test ./... -modfile=testdata/go_test.mod -coverprofile=coverage.out -covermode=count
 
-benchmark:
+benchmark: depsdev
 	go mod tidy -modfile=testdata/go_test.mod
-	go test -modfile=testdata/go_test.mod -bench . -benchmem -benchtime 10000x
+	go test -modfile=testdata/go_test.mod -bench . -benchmem -benchtime 10s -run Benchmark | tee benchmark.out
+	cat benchmark.out | octocov-go-test-bench > custom_metrics_bencmark.json
 
 lint:
 	golangci-lint run ./...
@@ -19,6 +20,7 @@ lint:
 depsdev:
 	go install github.com/Songmu/ghch/cmd/ghch@latest
 	go install github.com/Songmu/gocredits/cmd/gocredits@latest
+	go install github.com/k1LoW/octocov-go-test-bench/cmd/octocov-go-test-bench@latest
 
 prerelease:
 	git pull origin main --tag
