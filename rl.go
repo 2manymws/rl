@@ -71,17 +71,17 @@ func (lh *limitHandler) status(now, currentWindow time.Time) (bool, float64, err
 	return true, rate, nil
 }
 
-type rateLimiter struct {
+type limitMw struct {
 	limiters []Limiter
 }
 
-func newRateLimiter(limiters []Limiter) *rateLimiter {
-	return &rateLimiter{
+func newLimitMw(limiters []Limiter) *limitMw {
+	return &limitMw{
 		limiters: limiters,
 	}
 }
 
-func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
+func (rl *limitMw) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now().UTC()
 		var lastLH *limitHandler
@@ -187,6 +187,6 @@ func (rl *rateLimiter) Handler(next http.Handler) http.Handler {
 // New returns a new rate limiter middleware.
 // The order of the limitters should be arranged in **reverse** order of Limitter with strict rate limit to return appropriate X-RateLimit-* headers to the client.
 func New(limiters ...Limiter) func(next http.Handler) http.Handler {
-	rl := newRateLimiter(limiters)
+	rl := newLimitMw(limiters)
 	return rl.Handler
 }
