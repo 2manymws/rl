@@ -4,7 +4,7 @@
 
 ## Usage
 
-Prepare an instance that satisfies [`rl.Limiter`](https://pkg.go.dev/github.com/k1LoW/rl#Limiter) interface.
+Prepare an instance that implements [`rl.Limiter`](https://pkg.go.dev/github.com/k1LoW/rl#Limiter) interface.
 
 Then, generate the middleware ( `func(next http.Handler) http.Handler` ) with [`rl.New`](https://pkg.go.dev/github.com/k1LoW/rl#New)
 
