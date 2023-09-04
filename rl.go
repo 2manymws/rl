@@ -97,6 +97,7 @@ func (rl *limitMw) Handler(next http.Handler) http.Handler {
 				continue
 			}
 			if err != nil {
+				_ = r.Body.Close()
 				http.Error(w, err.Error(), http.StatusPreconditionRequired)
 				return
 			}
@@ -164,9 +165,11 @@ func (rl *limitMw) Handler(next http.Handler) http.Handler {
 					e.lh.limiter.OnRequestLimit(e)(w, r)
 					return
 				}
+				_ = r.Body.Close()
 				http.Error(w, e.Error(), e.statusCode)
 				return
 			}
+			_ = r.Body.Close()
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
