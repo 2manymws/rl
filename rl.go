@@ -51,24 +51,21 @@ type limitHandler struct {
 	mu                 sync.Mutex
 }
 
-func (lh *limitHandler) status(now, currentWindow time.Time) (bool, float64, error) {
+func (lh *limitHandler) status(now, currentWindow time.Time) (float64, error) {
 	previousWindow := currentWindow.Add(-lh.windowLen)
 
 	currCount, err := lh.limiter.Get(lh.key, currentWindow)
 	if err != nil {
-		return false, 0, err
+		return 0, err
 	}
 	prevCount, err := lh.limiter.Get(lh.key, previousWindow)
 	if err != nil {
-		return false, 0, err
+		return 0, err
 	}
 
 	diff := now.Sub(currentWindow)
 	rate := float64(prevCount)*(float64(lh.windowLen)-float64(diff))/float64(lh.windowLen) + float64(currCount)
-	if rate > float64(lh.reqLimit) {
-		return false, rate, nil
-	}
-	return true, rate, nil
+	return rate, nil
 }
 
 type limitMw struct {
@@ -123,7 +120,7 @@ func (rl *limitMw) Handler(next http.Handler) http.Handler {
 					return nil
 				default:
 				}
-				_, rate, err := lh.status(now, currentWindow)
+				rate, err := lh.status(now, currentWindow)
 				if err != nil {
 					return newLimitError(http.StatusPreconditionRequired, err, lh)
 				}
