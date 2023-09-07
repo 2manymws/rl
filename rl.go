@@ -128,14 +128,11 @@ func (rl *limitMw) Handler(next http.Handler) http.Handler {
 					return newLimitError(http.StatusPreconditionRequired, err, lh)
 				}
 				nrate := int(math.Round(rate))
-				if lh.reqLimit > nrate {
-					lh.rateLimitRemaining = lh.reqLimit - nrate
-				}
-
 				if nrate >= lh.reqLimit {
 					return newLimitError(http.StatusTooManyRequests, ErrRateLimitExceeded, lh)
 				}
 
+				lh.rateLimitRemaining = lh.reqLimit - nrate
 				if err := lh.limiter.Increment(lh.key, currentWindow); err != nil {
 					return newLimitError(http.StatusInternalServerError, err, lh)
 				}
