@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.6.1](https://github.com/k1LoW/rl/compare/v0.6.0...v0.6.1) - 2023-09-15
+### Other Changes
+- In the case of multiple limiters, cancel unnecessary processing if one limiter exceeds its limit. by @k1LoW in https://github.com/k1LoW/rl/pull/21
+- Show benchmark in pull request using octocov by @k1LoW in https://github.com/k1LoW/rl/pull/23
+- Freeze benchtime by @k1LoW in https://github.com/k1LoW/rl/pull/24
+- Close request body when response error in rl by @k1LoW in https://github.com/k1LoW/rl/pull/25
+- Revert "Close request body when response error in rl" by @k1LoW in https://github.com/k1LoW/rl/pull/26
+- Add gostyle-action by @k1LoW in https://github.com/k1LoW/rl/pull/27
+
 ## [v0.6.0](https://github.com/k1LoW/rl/compare/v0.5.2...v0.6.0) - 2023-08-28
 ### Breaking Changes 🛠
 - Provide Limiter with a feature to ignore the next and following Limiters. by @k1LoW in https://github.com/k1LoW/rl/pull/20
