@@ -24,6 +24,9 @@ jobs:
       - name: Run lint
         uses: reviewdog/action-golangci-lint@v2
 
+      - name: Run gostyle
+        uses: k1LoW/gostyle-action@main
+
       - name: Run tests
         run: make ci
 
