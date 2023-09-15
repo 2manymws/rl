@@ -14,12 +14,16 @@ benchmark: depsdev
 	go test -modfile=testdata/go_test.mod -bench . -benchmem -benchtime 10000x -run Benchmark | octocov-go-test-bench --tee > custom_metrics_benchmark.json
 
 lint:
+	go mod tidy
 	golangci-lint run ./...
+	go vet -vettool=`which gostyle` -gostyle.config=$(PWD)/.gostyle.yml ./...
+	git restore go.*
 
 depsdev:
 	go install github.com/Songmu/ghch/cmd/ghch@latest
 	go install github.com/Songmu/gocredits/cmd/gocredits@latest
 	go install github.com/k1LoW/octocov-go-test-bench/cmd/octocov-go-test-bench@latest
+	go install github.com/k1LoW/gostyle@latest
 
 prerelease:
 	git pull origin main --tag
