@@ -36,9 +36,9 @@ type Limiter interface {
 	OnRequestLimit(err error) http.HandlerFunc
 
 	// Get returns the current count for the key and window
-	Get(key string, window time.Time) (count int, err error)
+	Get(key string, window time.Time) (count int, err error) //nostyle:getters
 	// Increment increments the count for the key and window
-	Increment(key string, currentWindow time.Time) error
+	Increment(key string, currWindow time.Time) error
 }
 
 type limitHandler struct {
@@ -51,19 +51,19 @@ type limitHandler struct {
 	mu                 sync.Mutex
 }
 
-func (lh *limitHandler) status(now, currentWindow time.Time) (float64, error) {
-	previousWindow := currentWindow.Add(-lh.windowLen)
+func (lh *limitHandler) status(now, currWindow time.Time) (float64, error) {
+	prevWindow := currWindow.Add(-lh.windowLen)
 
-	currCount, err := lh.limiter.Get(lh.key, currentWindow)
+	currCount, err := lh.limiter.Get(lh.key, currWindow)
 	if err != nil {
 		return 0, err
 	}
-	prevCount, err := lh.limiter.Get(lh.key, previousWindow)
+	prevCount, err := lh.limiter.Get(lh.key, prevWindow)
 	if err != nil {
 		return 0, err
 	}
 
-	diff := now.Sub(currentWindow)
+	diff := now.Sub(currWindow)
 	rate := float64(prevCount)*(float64(lh.windowLen)-float64(diff))/float64(lh.windowLen) + float64(currCount)
 	return rate, nil
 }
@@ -78,12 +78,12 @@ func newLimitMw(limiters []Limiter) *limitMw {
 	}
 }
 
-func (rl *limitMw) Handler(next http.Handler) http.Handler {
+func (lm *limitMw) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now().UTC()
 		var lastLH *limitHandler
 		eg, ctx := errgroup.WithContext(context.Background())
-		for _, limiter := range rl.limiters {
+		for _, limiter := range lm.limiters {
 			rule, err := limiter.Rule(r)
 			if rule.ReqLimit < 0 {
 				// If the request limit is negative, skip this limiter
@@ -107,20 +107,20 @@ func (rl *limitMw) Handler(next http.Handler) http.Handler {
 			eg.Go(func() error {
 				lh.mu.Lock()
 				defer lh.mu.Unlock()
-				currentWindow := now.Truncate(lh.windowLen)
+				currWindow := now.Truncate(lh.windowLen)
 				lh.rateLimitRemaining = 0
-				lh.rateLimitReset = int(currentWindow.Add(lh.windowLen).Unix())
+				lh.rateLimitReset = int(currWindow.Add(lh.windowLen).Unix())
 				select {
 				// Check if the request limit already exceeded before calling lh.status()
 				case <-ctx.Done():
 					// Increment must be called even if the request limit is already exceeded
-					if err := lh.limiter.Increment(lh.key, currentWindow); err != nil {
+					if err := lh.limiter.Increment(lh.key, currWindow); err != nil {
 						return newLimitError(http.StatusInternalServerError, err, lh)
 					}
 					return nil
 				default:
 				}
-				rate, err := lh.status(now, currentWindow)
+				rate, err := lh.status(now, currWindow)
 				if err != nil {
 					return newLimitError(http.StatusPreconditionRequired, err, lh)
 				}
@@ -130,7 +130,7 @@ func (rl *limitMw) Handler(next http.Handler) http.Handler {
 				}
 
 				lh.rateLimitRemaining = lh.reqLimit - nrate
-				if err := lh.limiter.Increment(lh.key, currentWindow); err != nil {
+				if err := lh.limiter.Increment(lh.key, currWindow); err != nil {
 					return newLimitError(http.StatusInternalServerError, err, lh)
 				}
 				return nil

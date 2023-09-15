@@ -14,7 +14,7 @@ import (
 
 var _ rl.Limiter = (*testutil.Limiter)(nil)
 
-func TestRL(t *testing.T) {
+func TestRateLimit(t *testing.T) {
 	const noLimitReq = 100
 	tests := []struct {
 		name                 string
@@ -35,7 +35,7 @@ func TestRL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := http.NewServeMux()
 			r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-				w.Write([]byte("Hello, world"))
+				_, _ = w.Write([]byte("Hello, world"))
 			})
 			m := rl.New(tt.limiters...)
 			ts := httptest.NewServer(m(r))
@@ -84,10 +84,10 @@ func TestRL(t *testing.T) {
 	}
 }
 
-func BenchmarkRL(b *testing.B) {
+func BenchmarkRL(b *testing.B) { //nostyle:all
 	r := http.NewServeMux()
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, world"))
+		_, _ = w.Write([]byte("Hello, world"))
 	})
 	m := rl.New(
 		testutil.NewLimiter(10, httprate.KeyByIP, 0),
