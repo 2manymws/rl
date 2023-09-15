@@ -28,7 +28,7 @@ jobs:
         run: go mod tidy
 
       - name: Run gostyle
-        uses: k1LoW/gostyle-action@main
+        uses: k1LoW/gostyle-action@v1
         with:
           config-file: .gostyle.yml
 
