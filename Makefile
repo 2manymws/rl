@@ -14,8 +14,10 @@ benchmark: depsdev
 	go test -modfile=testdata/go_test.mod -bench . -benchmem -benchtime 10000x -run Benchmark | octocov-go-test-bench --tee > custom_metrics_benchmark.json
 
 cachegrind: depsdev
-	go mod tidy -modfile=testdata/go_test.mod
-	valgrind --tool=cachegrind --I1=8192,8,64 --D1=16384,4,64 --LL=32768,8,64 go test -modfile=testdata/go_test.mod -bench . -benchmem -benchtime 10000x -run Benchmark
+	cd testdata/testbin && go build -o testbin
+	valgrind --tool=cachegrind --I1=32768,8,64 --D1=32768,8,64 --LL=8388608,16,64 ./testdata/testbin/testbin 1000
+	valgrind --tool=cachegrind --I1=32768,8,64 --D1=32768,8,64 --LL=8388608,16,64 ./testdata/testbin/testbin 1000
+	valgrind --tool=cachegrind --I1=32768,8,64 --D1=32768,8,64 --LL=8388608,16,64 ./testdata/testbin/testbin 1000
 
 lint:
 	go mod tidy
