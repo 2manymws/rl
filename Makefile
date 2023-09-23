@@ -15,7 +15,7 @@ benchmark: depsdev
 
 cachegrind: depsdev
 	go mod tidy -modfile=testdata/go_test.mod
-	valgrind --tool=cachegrind go test -modfile=testdata/go_test.mod -bench . -benchmem -benchtime 10000x -run Benchmark
+	valgrind --tool=cachegrind --I1=8192,8,64 --D1=16384,4,64 --LL=32768,8,64 go test -modfile=testdata/go_test.mod -bench . -benchmem -benchtime 10000x -run Benchmark
 
 lint:
 	go mod tidy
