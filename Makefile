@@ -13,6 +13,10 @@ benchmark: depsdev
 	go mod tidy -modfile=testdata/go_test.mod
 	go test -modfile=testdata/go_test.mod -bench . -benchmem -benchtime 10000x -run Benchmark | octocov-go-test-bench --tee > custom_metrics_benchmark.json
 
+cachegrind: depsdev
+	go mod tidy -modfile=testdata/go_test.mod
+	valgrind --tool=cachegrind go test -modfile=testdata/go_test.mod -bench . -benchmem -benchtime 10000x -run Benchmark
+
 lint:
 	go mod tidy
 	golangci-lint run ./...
