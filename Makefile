@@ -18,6 +18,7 @@ cachegrind: depsdev
 	valgrind --tool=cachegrind --I1=32768,8,64 --D1=32768,8,64 --LL=8388608,16,64 ./testdata/testbin/testbin 1000
 	valgrind --tool=cachegrind --I1=32768,8,64 --D1=32768,8,64 --LL=8388608,16,64 ./testdata/testbin/testbin 1000
 	valgrind --tool=cachegrind --I1=32768,8,64 --D1=32768,8,64 --LL=8388608,16,64 ./testdata/testbin/testbin 1000
+	sudo perf stat ./testdata/testbin/testbin 1000
 
 lint:
 	go mod tidy
