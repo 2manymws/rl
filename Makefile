@@ -15,9 +15,8 @@ benchmark: depsdev
 
 cachegrind: depsdev
 	cd testdata/testbin && go build -o testbin
-	valgrind --tool=cachegrind --I1=32768,8,64 --D1=32768,8,64 --LL=8388608,16,64 ./testdata/testbin/testbin 10000
-	valgrind --tool=cachegrind --I1=32768,8,64 --D1=32768,8,64 --LL=8388608,16,64 ./testdata/testbin/testbin 10000
-	valgrind --tool=cachegrind --I1=32768,8,64 --D1=32768,8,64 --LL=8388608,16,64 ./testdata/testbin/testbin 10000
+	valgrind --tool=cachegrind --cachegrind-out-file=cachegrind.out --I1=32768,8,64 --D1=32768,8,64 --LL=8388608,16,64 ./testdata/testbin/testbin 10000
+	cat cachegrind.out
 
 lint:
 	go mod tidy
