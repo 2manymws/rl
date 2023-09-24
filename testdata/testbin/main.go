@@ -25,21 +25,16 @@ func main() {
 		testutil.NewLimiter(10, httprate.KeyByIP, 0),
 		testutil.NewLimiter(10, testutil.KeyByHost, 0),
 	)
-	ts := httptest.NewServer(m(r))
-	defer ts.Close()
+	router := m(r)
 
 	log.Printf("start %d requests", n)
 	for i := 0; i < n; i++ {
-		req, err := http.NewRequest("GET", ts.URL, nil)
+		req, err := http.NewRequest("GET", "http://example.com", nil)
 		if err != nil {
 			log.Fatal(err)
 		}
-		req.Host = "a.example.com"
-		res, err := http.DefaultClient.Do(req)
-		if err != nil {
-			log.Fatal(err)
-		}
-		res.Body.Close()
+		res := httptest.NewRecorder()
+		router.ServeHTTP(res, req)
 	}
 	log.Println("done")
 }
