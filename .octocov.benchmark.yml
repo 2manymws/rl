@@ -1,5 +1,9 @@
-name: Benchmark
+repository: ${GITHUB_REPOSITORY}/benchmark
+coverage:
+  if: false
 codeToTestRatio:
+  if: false
+testExecutionTime:
   if: false
 diff:
   datastores:
@@ -8,7 +12,3 @@ comment:
   if: is_pull_request
 summary:
   if: true
-report:
-  if: is_default_branch
-  datastores:
-    - artifact://${GITHUB_REPOSITORY}/benchmark
