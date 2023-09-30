@@ -1,0 +1,14 @@
+name: Benchmark
+codeToTestRatio:
+  if: false
+diff:
+  datastores:
+    - artifact://${GITHUB_REPOSITORY}/benchmark
+comment:
+  if: is_pull_request
+summary:
+  if: true
+report:
+  if: is_default_branch
+  datastores:
+    - artifact://${GITHUB_REPOSITORY}/benchmark

@@ -1,14 +1,11 @@
-name: build
+name: benchmark
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
 
 jobs:
-  test:
-    name: Test
+  benchmark:
+    name: Benchmark
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -26,19 +23,14 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Run lint
-        uses: reviewdog/action-golangci-lint@v2
+      - name: Run benchmark
+        run: make benchmark
 
-      - name: Run go mod tidy for gostyle
-        run: go mod tidy
-
-      - name: Run gostyle
-        uses: k1LoW/gostyle-action@v1
-        with:
-          config-file: .gostyle.yml
-
-      - name: Run tests
-        run: make ci
+      - name: Run cachegrind
+        run: make cachegrind
 
       - name: Run octocov
         uses: k1LoW/octocov-action@v0
+        env:
+          OCTOCOV_CUSTOM_METRICS_BENCHMARK: custom_metrics_benchmark.json
+          config: .octocov.benchmark.yml
