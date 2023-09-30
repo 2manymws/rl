@@ -5,10 +5,7 @@ codeToTestRatio:
   if: false
 testExecutionTime:
   if: false
-diff:
-  datastores:
-    - local://main/benchmark.main.json
-comment:
+report:
   if: is_pull_request
-summary:
-  if: true
+  datastores:
+    - local://benchmark.main.json

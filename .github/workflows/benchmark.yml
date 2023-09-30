@@ -14,7 +14,6 @@ jobs:
       #   run: |
       #     sudo apt-get update
       #     sudo apt-get install -y valgrind
-
       - name: Check out source code
         uses: actions/checkout@v4
 
@@ -23,11 +22,25 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Check out source code (main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+
+      - name: Run benchmark (main)
+        run: make benchmark
+        working-directory: main
+
+      - name: Run octocov (main)
+        uses: k1LoW/octocov-action@v0
+        with:
+          config: .octocov.benchmark.main.yml
+        env:
+          OCTOCOV_CUSTOM_METRICS_BENCHMARK: main/custom_metrics_benchmark.json
+
       - name: Run benchmark
         run: make benchmark
-
-      # - name: Run cachegrind
-      #   run: make cachegrind
 
       - name: Run octocov
         uses: k1LoW/octocov-action@v0
@@ -35,3 +48,7 @@ jobs:
           config: .octocov.benchmark.yml
         env:
           OCTOCOV_CUSTOM_METRICS_BENCHMARK: custom_metrics_benchmark.json
+
+
+      # - name: Run cachegrind
+      #   run: make cachegrind
