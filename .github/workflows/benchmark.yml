@@ -38,7 +38,7 @@ jobs:
           config: .octocov.benchmark.main.yml
         env:
           OCTOCOV_GITHUB_REF: refs/heads/main
-          OCTOCOV_GITHUB_SHA: '----------'
+          OCTOCOV_GITHUB_SHA: ''
           OCTOCOV_CUSTOM_METRICS_BENCHMARK: main/custom_metrics_benchmark.json
 
       - name: Run benchmark
