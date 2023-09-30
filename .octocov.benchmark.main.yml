@@ -6,6 +6,5 @@ codeToTestRatio:
 testExecutionTime:
   if: false
 report:
-  if: is_pull_request
   datastores:
     - local://main
