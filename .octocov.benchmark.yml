@@ -7,7 +7,7 @@ testExecutionTime:
   if: false
 diff:
   datastores:
-    - local://main/benchmark.main.json
+    - local://main
 comment:
   if: is_pull_request
 summary:

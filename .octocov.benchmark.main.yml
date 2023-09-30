@@ -8,4 +8,4 @@ testExecutionTime:
 report:
   if: is_pull_request
   datastores:
-    - local://benchmark.main.json
+    - local://main
