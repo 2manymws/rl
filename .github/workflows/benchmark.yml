@@ -64,4 +64,6 @@ jobs:
       - name: Show diff
         run: |
           cg_diff cachegrind.out main/cachegrind.out > cachegrind.out.diff
-          cg_annotate cachegrind.out.diff --show-percs=no --auto=no --show=Ir,I1mr,ILmr,Dr,D1mr
+          cg_annotate cachegrind.out.diff --show=Ir
+          cg_annotate cachegrind.out --show-percs=no --auto=no --show=Ir
+          cg_annotate main/cachegrind.out --show-percs=no --auto=no --show=Ir
