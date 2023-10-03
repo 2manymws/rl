@@ -60,3 +60,6 @@ jobs:
         env:
           OCTOCOV_CUSTOM_METRICS_BENCHMARK: custom_metrics_benchmark.json
           OCTOCOV_CUSTOM_METRICS_CACHEGRIND: custom_metrics_cachegrind.json
+
+      - name: Show diff
+        run: cg_annotate --diff cachegrind.out main/cachegrind.out
