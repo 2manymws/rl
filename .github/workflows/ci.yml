@@ -13,8 +13,13 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      - name: Set up
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y valgrind
+
       - name: Check out source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -35,10 +40,5 @@ jobs:
       - name: Run tests
         run: make ci
 
-      - name: Run benchmark
-        run: make benchmark
-
       - name: Run octocov
         uses: k1LoW/octocov-action@v0
-        env:
-          OCTOCOV_CUSTOM_METRICS_BENCHMARK: custom_metrics_benchmark.json

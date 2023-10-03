@@ -13,6 +13,11 @@ benchmark: depsdev
 	go mod tidy -modfile=testdata/go_test.mod
 	go test -modfile=testdata/go_test.mod -bench . -benchmem -benchtime 10000x -run Benchmark | octocov-go-test-bench --tee > custom_metrics_benchmark.json
 
+cachegrind: depsdev
+	cd testdata/testbin && go build -o testbin
+	setarch `uname -m` -R valgrind --tool=cachegrind --cachegrind-out-file=cachegrind.out --I1=32768,8,64 --D1=32768,8,64 --LL=8388608,16,64 ./testdata/testbin/testbin 10000
+	cat cachegrind.out | octocov-cachegrind --tee > custom_metrics_cachegrind.json
+
 lint:
 	go mod tidy
 	golangci-lint run ./...
@@ -23,6 +28,7 @@ depsdev:
 	go install github.com/Songmu/ghch/cmd/ghch@latest
 	go install github.com/Songmu/gocredits/cmd/gocredits@latest
 	go install github.com/k1LoW/octocov-go-test-bench/cmd/octocov-go-test-bench@latest
+	go install github.com/k1LoW/octocov-cachegrind/cmd/octocov-cachegrind@latest
 	go install github.com/k1LoW/gostyle@latest
 
 prerelease:
