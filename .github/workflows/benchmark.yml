@@ -10,10 +10,10 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      # - name: Set up
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y valgrind
+      - name: Set up
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y valgrind
       - name: Check out source code
         uses: actions/checkout@v4
 
@@ -32,6 +32,10 @@ jobs:
         run: make benchmark
         working-directory: main
 
+      - name: Run benchmark using cachegrind (main)
+        run: make cachegrind
+        working-directory: main
+
       - name: Run octocov (main)
         uses: k1LoW/octocov-action@v0
         with:
@@ -40,9 +44,13 @@ jobs:
           OCTOCOV_GITHUB_REF: refs/heads/main
           OCTOCOV_GITHUB_SHA: none
           OCTOCOV_CUSTOM_METRICS_BENCHMARK: main/custom_metrics_benchmark.json
+          OCTOCOV_CUSTOM_METRICS_CACHEGRIND: main/custom_metrics_cachegrind.json
 
       - name: Run benchmark
         run: make benchmark
+
+      - name: Run benchmark using cachegrind
+        run: make cachegrind
 
       - name: Run octocov
         uses: k1LoW/octocov-action@v0
@@ -50,7 +58,4 @@ jobs:
           config: .octocov.benchmark.yml
         env:
           OCTOCOV_CUSTOM_METRICS_BENCHMARK: custom_metrics_benchmark.json
-
-
-      # - name: Run cachegrind
-      #   run: make cachegrind
+          OCTOCOV_CUSTOM_METRICS_CACHEGRIND: custom_metrics_cachegrind.json

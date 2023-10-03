@@ -1,3 +1,5 @@
 coverage.out
+cachegrind.out
 custom_metrics_benchmark.json
+custom_metrics_cachegrind.json
 testdata/testbin/testbin
