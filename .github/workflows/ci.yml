@@ -13,11 +13,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Set up
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y valgrind
-
       - name: Check out source code
         uses: actions/checkout@v4
 
@@ -26,15 +21,19 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Run lint
-        uses: reviewdog/action-golangci-lint@v2
-
       - name: Run go mod tidy for gostyle
         run: go mod tidy
+
+      - name: Run lint
+        uses: reviewdog/action-golangci-lint@v2
+        with:
+          fail_on_error: true
+          golangci_lint_flags: --timeout=5m
 
       - name: Run gostyle
         uses: k1LoW/gostyle-action@v1
         with:
+          fail-on-error: true
           config-file: .gostyle.yml
 
       - name: Run tests
