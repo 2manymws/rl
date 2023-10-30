@@ -15,7 +15,7 @@ type LimitError struct {
 	lh         *limitHandler
 }
 
-func newLimitError(statusCode int, err error, lh *limitHandler) *LimitError {
+func NewLimitError(statusCode int, err error, lh *limitHandler) *LimitError {
 	return &LimitError{
 		statusCode: statusCode,
 		err:        err,

@@ -35,7 +35,11 @@ func TestRateLimit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := http.NewServeMux()
 			r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-				_, _ = w.Write([]byte("Hello, world"))
+				_, err := w.Write([]byte("Hello, world"))
+				if err != nil {
+					t.Fatal(err)
+				}
+
 			})
 			m := rl.New(tt.limiters...)
 			ts := httptest.NewServer(m(r))
@@ -87,12 +91,12 @@ func TestRateLimit(t *testing.T) {
 func BenchmarkRL(b *testing.B) { //nostyle:all
 	r := http.NewServeMux()
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte("Hello, world"))
+		_, err := w.Write([]byte("Hello, world"))
+		if err != nil {
+			b.Fatal(err)
+		}
 	})
-	m := rl.New(
-		testutil.NewLimiter(10, httprate.KeyByIP, 0),
-		testutil.NewLimiter(10, testutil.KeyByHost, 0),
-	)
+	m := rl.New(testutil.NewLimiter(10, httprate.KeyByIP, 0), testutil.NewLimiter(10, testutil.KeyByHost, 0))
 	ts := httptest.NewServer(m(r))
 	b.Cleanup(func() {
 		ts.Close()
