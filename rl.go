@@ -51,6 +51,14 @@ type limitHandler struct {
 	mu                 sync.Mutex
 }
 
+func NewLimitHandler(key string, reqLimit int, windowLen time.Duration, limiter Limiter) *limitHandler {
+	return &limitHandler{
+		key:       key,
+		reqLimit:  reqLimit,
+		windowLen: windowLen,
+		limiter:   limiter,
+	}
+}
 func (lh *limitHandler) status(now, currWindow time.Time) (float64, error) {
 	prevWindow := currWindow.Add(-lh.windowLen)
 
@@ -97,12 +105,7 @@ func (lm *limitMw) Handler(next http.Handler) http.Handler {
 				http.Error(w, err.Error(), http.StatusPreconditionRequired)
 				return
 			}
-			lh := &limitHandler{
-				key:       rule.Key,
-				reqLimit:  rule.ReqLimit,
-				windowLen: rule.WindowLen,
-				limiter:   limiter,
-			}
+			lh := NewLimitHandler(rule.Key, rule.ReqLimit, rule.WindowLen, limiter)
 			lastLH = lh
 			eg.Go(func() error {
 				lh.mu.Lock()
