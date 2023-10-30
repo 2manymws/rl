@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.6.2](https://github.com/k1LoW/rl/compare/v0.6.1...v0.6.2) - 2023-10-30
+### Other Changes
+- Add benchmark using cachegrind by @k1LoW in https://github.com/k1LoW/rl/pull/28
+- Update action by @k1LoW in https://github.com/k1LoW/rl/pull/30
+- Show `cg_diff` on GitHub Actions by @k1LoW in https://github.com/k1LoW/rl/pull/31
+- Change scope with newLimitError by @pyama86 in https://github.com/k1LoW/rl/pull/32
+
 ## [v0.6.1](https://github.com/k1LoW/rl/compare/v0.6.0...v0.6.1) - 2023-09-15
 ### Other Changes
 - In the case of multiple limiters, cancel unnecessary processing if one limiter exceeds its limit. by @k1LoW in https://github.com/k1LoW/rl/pull/21
