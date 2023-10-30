@@ -69,7 +69,7 @@ func (l *Limiter) OnRequestLimit(err error) http.HandlerFunc {
 		} else {
 			w.WriteHeader(http.StatusTooManyRequests)
 		}
-		le, ok := err.(*rl.LimitError)
+		le, ok := err.(rl.LimitError)
 		if !ok {
 			_, err = w.Write([]byte("Too many requests"))
 			if err != nil {

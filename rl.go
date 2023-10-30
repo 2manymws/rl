@@ -115,23 +115,23 @@ func (lm *limitMw) Handler(next http.Handler) http.Handler {
 				case <-ctx.Done():
 					// Increment must be called even if the request limit is already exceeded
 					if err := lh.limiter.Increment(lh.key, currWindow); err != nil {
-						return NewLimitError(http.StatusInternalServerError, err, lh)
+						return newLimitError(http.StatusInternalServerError, err, lh)
 					}
 					return nil
 				default:
 				}
 				rate, err := lh.status(now, currWindow)
 				if err != nil {
-					return NewLimitError(http.StatusPreconditionRequired, err, lh)
+					return newLimitError(http.StatusPreconditionRequired, err, lh)
 				}
 				nrate := int(math.Round(rate))
 				if nrate >= lh.reqLimit {
-					return NewLimitError(http.StatusTooManyRequests, ErrRateLimitExceeded, lh)
+					return newLimitError(http.StatusTooManyRequests, ErrRateLimitExceeded, lh)
 				}
 
 				lh.rateLimitRemaining = lh.reqLimit - nrate
 				if err := lh.limiter.Increment(lh.key, currWindow); err != nil {
-					return NewLimitError(http.StatusInternalServerError, err, lh)
+					return newLimitError(http.StatusInternalServerError, err, lh)
 				}
 				return nil
 			})
@@ -144,7 +144,7 @@ func (lm *limitMw) Handler(next http.Handler) http.Handler {
 		// Wait for all limiters to finish
 		if err := eg.Wait(); err != nil {
 			// Handle first error
-			if e, ok := err.(*LimitError); ok {
+			if e, ok := err.(*limitError); ok {
 				if e.lh.limiter.ShouldSetXRateLimitHeaders(err) {
 					w.Header().Set("X-RateLimit-Limit", fmt.Sprintf("%d", e.lh.reqLimit))
 					w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", e.lh.rateLimitRemaining))
