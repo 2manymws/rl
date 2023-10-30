@@ -78,10 +78,7 @@ func (l *Limiter) OnRequestLimit(err error) http.HandlerFunc {
 			return
 		}
 		msg := fmt.Sprintf("Too many requests. name: %s, ratelimit: %d req/%s, ratelimit-ramaining: %d, ratelimit-reset: %d", le.LimierName(), le.RequestLimit(), le.WindowLen(), le.RateLimitRemaining(), le.RateLimitReset())
-		_, err = w.Write([]byte(msg))
-		if err != nil {
-			return
-		}
+		_, _ = w.Write([]byte(msg)) //nostyle:handlerrors
 	}
 }
 
