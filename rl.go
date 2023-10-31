@@ -31,9 +31,9 @@ type Limiter interface {
 	// Rule returns the key and rate limit rule for the request
 	Rule(r *http.Request) (rule *Rule, err error)
 	// ShouldSetXRateLimitHeaders returns true if the X-RateLimit-* headers should be set
-	ShouldSetXRateLimitHeaders(*LimitError) bool
+	ShouldSetXRateLimitHeaders(*Context) bool
 	// OnRequestLimit returns the handler to be called when the rate limit is exceeded
-	OnRequestLimit(*LimitError) http.HandlerFunc
+	OnRequestLimit(*Context) http.HandlerFunc
 
 	// Get returns the current count for the key and window
 	Get(key string, window time.Time) (count int, err error) //nostyle:getters
@@ -115,23 +115,23 @@ func (lm *limitMw) Handler(next http.Handler) http.Handler {
 				case <-ctx.Done():
 					// Increment must be called even if the request limit is already exceeded
 					if err := lh.limiter.Increment(lh.key, currWindow); err != nil {
-						return newLimitError(http.StatusInternalServerError, err, lh)
+						return newContext(http.StatusInternalServerError, err, lh)
 					}
 					return nil
 				default:
 				}
 				rate, err := lh.status(now, currWindow)
 				if err != nil {
-					return newLimitError(http.StatusPreconditionRequired, err, lh)
+					return newContext(http.StatusPreconditionRequired, err, lh)
 				}
 				nrate := int(math.Round(rate))
 				if nrate >= lh.reqLimit {
-					return newLimitError(http.StatusTooManyRequests, ErrRateLimitExceeded, lh)
+					return newContext(http.StatusTooManyRequests, ErrRateLimitExceeded, lh)
 				}
 
 				lh.rateLimitRemaining = lh.reqLimit - nrate
 				if err := lh.limiter.Increment(lh.key, currWindow); err != nil {
-					return newLimitError(http.StatusInternalServerError, err, lh)
+					return newContext(http.StatusInternalServerError, err, lh)
 				}
 				return nil
 			})
@@ -144,7 +144,7 @@ func (lm *limitMw) Handler(next http.Handler) http.Handler {
 		// Wait for all limiters to finish
 		if err := eg.Wait(); err != nil {
 			// Handle first error
-			if e, ok := err.(*LimitError); ok {
+			if e, ok := err.(*Context); ok {
 				if e.lh.limiter.ShouldSetXRateLimitHeaders(e) {
 					w.Header().Set("X-RateLimit-Limit", fmt.Sprintf("%d", e.lh.reqLimit))
 					w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", e.lh.rateLimitRemaining))

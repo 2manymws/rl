@@ -5,11 +5,11 @@ import (
 	"time"
 )
 
-var _ error = &LimitError{}
+var _ error = &Context{}
 var ErrRateLimitExceeded error = errors.New("rate limit exceeded")
 
-// LimitError is the error returned by the middleware.
-type LimitError struct {
+// Context is the error returned by the middleware.
+type Context struct {
 	StatusCode         int
 	Err                error
 	Limiter            Limiter
@@ -20,8 +20,8 @@ type LimitError struct {
 	lh                 *limitHandler
 }
 
-func newLimitError(statusCode int, err error, lh *limitHandler) *LimitError {
-	return &LimitError{
+func newContext(statusCode int, err error, lh *limitHandler) *Context {
+	return &Context{
 		StatusCode:         statusCode,
 		Err:                err,
 		Limiter:            lh.limiter,
@@ -34,6 +34,6 @@ func newLimitError(statusCode int, err error, lh *limitHandler) *LimitError {
 }
 
 // Error returns the error message.
-func (e *LimitError) Error() string {
+func (e *Context) Error() string {
 	return e.Err.Error()
 }

@@ -58,11 +58,11 @@ func (l *Limiter) Rule(r *http.Request) (*rl.Rule, error) {
 	}, nil
 }
 
-func (l *Limiter) ShouldSetXRateLimitHeaders(le *rl.LimitError) bool {
+func (l *Limiter) ShouldSetXRateLimitHeaders(le *rl.Context) bool {
 	return true
 }
 
-func (l *Limiter) OnRequestLimit(le *rl.LimitError) http.HandlerFunc {
+func (l *Limiter) OnRequestLimit(le *rl.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if l.statusCode != 0 {
 			w.WriteHeader(l.statusCode)
