@@ -31,9 +31,9 @@ type Limiter interface {
 	// Rule returns the key and rate limit rule for the request
 	Rule(r *http.Request) (rule *Rule, err error)
 	// ShouldSetXRateLimitHeaders returns true if the X-RateLimit-* headers should be set
-	ShouldSetXRateLimitHeaders(err error) bool
+	ShouldSetXRateLimitHeaders(*LimitError) bool
 	// OnRequestLimit returns the handler to be called when the rate limit is exceeded
-	OnRequestLimit(err error) http.HandlerFunc
+	OnRequestLimit(*LimitError) http.HandlerFunc
 
 	// Get returns the current count for the key and window
 	Get(key string, window time.Time) (count int, err error) //nostyle:getters
@@ -115,23 +115,23 @@ func (lm *limitMw) Handler(next http.Handler) http.Handler {
 				case <-ctx.Done():
 					// Increment must be called even if the request limit is already exceeded
 					if err := lh.limiter.Increment(lh.key, currWindow); err != nil {
-						return NewLimitError(http.StatusInternalServerError, err, lh)
+						return newLimitError(http.StatusInternalServerError, err, lh)
 					}
 					return nil
 				default:
 				}
 				rate, err := lh.status(now, currWindow)
 				if err != nil {
-					return NewLimitError(http.StatusPreconditionRequired, err, lh)
+					return newLimitError(http.StatusPreconditionRequired, err, lh)
 				}
 				nrate := int(math.Round(rate))
 				if nrate >= lh.reqLimit {
-					return NewLimitError(http.StatusTooManyRequests, ErrRateLimitExceeded, lh)
+					return newLimitError(http.StatusTooManyRequests, ErrRateLimitExceeded, lh)
 				}
 
 				lh.rateLimitRemaining = lh.reqLimit - nrate
 				if err := lh.limiter.Increment(lh.key, currWindow); err != nil {
-					return NewLimitError(http.StatusInternalServerError, err, lh)
+					return newLimitError(http.StatusInternalServerError, err, lh)
 				}
 				return nil
 			})
@@ -145,20 +145,20 @@ func (lm *limitMw) Handler(next http.Handler) http.Handler {
 		if err := eg.Wait(); err != nil {
 			// Handle first error
 			if e, ok := err.(*LimitError); ok {
-				if e.lh.limiter.ShouldSetXRateLimitHeaders(err) {
+				if e.lh.limiter.ShouldSetXRateLimitHeaders(e) {
 					w.Header().Set("X-RateLimit-Limit", fmt.Sprintf("%d", e.lh.reqLimit))
 					w.Header().Set("X-RateLimit-Remaining", fmt.Sprintf("%d", e.lh.rateLimitRemaining))
 					w.Header().Set("X-RateLimit-Reset", fmt.Sprintf("%d", e.lh.rateLimitReset))
 				}
-				if errors.Is(e.err, ErrRateLimitExceeded) {
+				if errors.Is(e.Err, ErrRateLimitExceeded) {
 					// Rate limit exceeded
-					if e.lh.limiter.ShouldSetXRateLimitHeaders(err) {
+					if e.lh.limiter.ShouldSetXRateLimitHeaders(e) {
 						w.Header().Set("Retry-After", fmt.Sprintf("%d", int(e.lh.windowLen.Seconds()))) // RFC 6585
 					}
 					e.lh.limiter.OnRequestLimit(e)(w, r)
 					return
 				}
-				http.Error(w, e.Error(), e.statusCode)
+				http.Error(w, e.Error(), e.StatusCode)
 				return
 			}
 			http.Error(w, err.Error(), http.StatusInternalServerError)
