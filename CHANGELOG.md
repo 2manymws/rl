@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.7.0](https://github.com/k1LoW/rl/compare/v0.6.2...v0.7.0) - 2023-10-31
+### Breaking Changes 🛠
+- Review Limiter interface by @k1LoW in https://github.com/k1LoW/rl/pull/35
+
 ## [v0.6.2](https://github.com/k1LoW/rl/compare/v0.6.1...v0.6.2) - 2023-10-30
 ### Other Changes
 - Add benchmark using cachegrind by @k1LoW in https://github.com/k1LoW/rl/pull/28
