@@ -69,7 +69,7 @@ func (l *Limiter) OnRequestLimit(le *rl.LimitError) http.HandlerFunc {
 		} else {
 			w.WriteHeader(http.StatusTooManyRequests)
 		}
-		msg := fmt.Sprintf("Too many requests. name: %s, ratelimit: %d req/%s, ratelimit-ramaining: %d, ratelimit-reset: %d", le.LimiterName, le.RequestLimit, le.WindowLen, le.RateLimitRemaining, le.RateLimitReset)
+		msg := fmt.Sprintf("Too many requests. name: %s, ratelimit: %d req/%s, ratelimit-ramaining: %d, ratelimit-reset: %d", le.Limiter.Name(), le.RequestLimit, le.WindowLen, le.RateLimitRemaining, le.RateLimitReset)
 		_, _ = w.Write([]byte(msg)) //nostyle:handlerrors
 	}
 }

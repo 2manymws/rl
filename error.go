@@ -12,7 +12,7 @@ var ErrRateLimitExceeded error = errors.New("rate limit exceeded")
 type LimitError struct {
 	StatusCode         int
 	Err                error
-	LimiterName        string
+	Limiter            Limiter
 	RequestLimit       int
 	WindowLen          time.Duration
 	RateLimitRemaining int
@@ -24,7 +24,7 @@ func newLimitError(statusCode int, err error, lh *limitHandler) *LimitError {
 	return &LimitError{
 		StatusCode:         statusCode,
 		Err:                err,
-		LimiterName:        lh.limiter.Name(),
+		Limiter:            lh.limiter,
 		RequestLimit:       lh.reqLimit,
 		WindowLen:          lh.windowLen,
 		RateLimitRemaining: lh.rateLimitRemaining,
