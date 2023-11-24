@@ -85,6 +85,11 @@ func (lm *limitMw) Handler(next http.Handler) http.Handler {
 		eg, ctx := errgroup.WithContext(context.Background())
 		for _, limiter := range lm.limiters {
 			rule, err := limiter.Rule(r)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusPreconditionRequired)
+				return
+			}
+
 			if rule.ReqLimit < 0 {
 				// If the request limit is negative, skip this limiter
 				if rule.IgnoreAfter {
@@ -92,10 +97,6 @@ func (lm *limitMw) Handler(next http.Handler) http.Handler {
 					break
 				}
 				continue
-			}
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusPreconditionRequired)
-				return
 			}
 			lh := &limitHandler{
 				key:       rule.Key,
