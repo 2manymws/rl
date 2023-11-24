@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.7.1](https://github.com/k1LoW/rl/compare/v0.7.0...v0.7.1) - 2023-11-24
+### Fix bug 🐛
+- should check error before access rule by @pyama86 in https://github.com/k1LoW/rl/pull/37
+
 ## [v0.7.0](https://github.com/k1LoW/rl/compare/v0.6.2...v0.7.0) - 2023-10-31
 ### Breaking Changes 🛠
 - Review Limiter interface by @k1LoW in https://github.com/k1LoW/rl/pull/35
