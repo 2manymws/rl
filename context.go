@@ -17,6 +17,7 @@ type Context struct {
 	WindowLen          time.Duration
 	RateLimitRemaining int
 	RateLimitReset     int
+	Key                string
 	lh                 *limitHandler
 }
 
@@ -29,6 +30,7 @@ func newContext(statusCode int, err error, lh *limitHandler) *Context {
 		WindowLen:          lh.windowLen,
 		RateLimitRemaining: lh.rateLimitRemaining,
 		RateLimitReset:     lh.rateLimitReset,
+		Key:                lh.key,
 		lh:                 lh,
 	}
 }
