@@ -2,6 +2,7 @@ package rl
 
 import (
 	"errors"
+	"net/http"
 	"time"
 )
 
@@ -17,11 +18,12 @@ type Context struct {
 	WindowLen          time.Duration
 	RateLimitRemaining int
 	RateLimitReset     int
+	Next               http.Handler
 	Key                string
 	lh                 *limitHandler
 }
 
-func newContext(statusCode int, err error, lh *limitHandler) *Context {
+func newContext(statusCode int, err error, lh *limitHandler, next http.Handler) *Context {
 	return &Context{
 		StatusCode:         statusCode,
 		Err:                err,
@@ -30,6 +32,7 @@ func newContext(statusCode int, err error, lh *limitHandler) *Context {
 		WindowLen:          lh.windowLen,
 		RateLimitRemaining: lh.rateLimitRemaining,
 		RateLimitReset:     lh.rateLimitReset,
+		Next:               next,
 		Key:                lh.key,
 		lh:                 lh,
 	}

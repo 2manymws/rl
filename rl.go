@@ -116,23 +116,23 @@ func (lm *limitMw) Handler(next http.Handler) http.Handler {
 				case <-ctx.Done():
 					// Increment must be called even if the request limit is already exceeded
 					if err := lh.limiter.Increment(lh.key, currWindow); err != nil {
-						return newContext(http.StatusInternalServerError, err, lh)
+						return newContext(http.StatusInternalServerError, err, lh, next)
 					}
 					return nil
 				default:
 				}
 				rate, err := lh.status(now, currWindow)
 				if err != nil {
-					return newContext(http.StatusPreconditionRequired, err, lh)
+					return newContext(http.StatusPreconditionRequired, err, lh, next)
 				}
 				nrate := int(math.Round(rate))
 				if nrate >= lh.reqLimit {
-					return newContext(http.StatusTooManyRequests, ErrRateLimitExceeded, lh)
+					return newContext(http.StatusTooManyRequests, ErrRateLimitExceeded, lh, next)
 				}
 
 				lh.rateLimitRemaining = lh.reqLimit - nrate
 				if err := lh.limiter.Increment(lh.key, currWindow); err != nil {
-					return newContext(http.StatusInternalServerError, err, lh)
+					return newContext(http.StatusInternalServerError, err, lh, next)
 				}
 				return nil
 			})
