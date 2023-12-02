@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.9.0](https://github.com/k1LoW/rl/compare/v0.8.0...v0.9.0) - 2023-12-02
+### Other Changes
+- Bump up version of golang.org/x/sync by @k1LoW in https://github.com/k1LoW/rl/pull/41
+- In cases within OnRequestLimit, I want to execute next. by @pyama86 in https://github.com/k1LoW/rl/pull/43
+
 ## [v0.8.0](https://github.com/k1LoW/rl/compare/v0.7.1...v0.8.0) - 2023-11-28
 ### New Features 🎉
 - The domain that has hit the rate limit is what I want to know. by @pyama86 in https://github.com/k1LoW/rl/pull/39
