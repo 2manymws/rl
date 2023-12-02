@@ -19,6 +19,7 @@ type Context struct {
 	RateLimitRemaining int
 	RateLimitReset     int
 	Next               http.Handler
+	Key                string
 	lh                 *limitHandler
 }
 
@@ -32,6 +33,7 @@ func newContext(statusCode int, err error, lh *limitHandler, next http.Handler) 
 		RateLimitRemaining: lh.rateLimitRemaining,
 		RateLimitReset:     lh.rateLimitReset,
 		Next:               next,
+		Key:                lh.key,
 		lh:                 lh,
 	}
 }

@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.8.0](https://github.com/k1LoW/rl/compare/v0.7.1...v0.8.0) - 2023-11-28
+### New Features 🎉
+- The domain that has hit the rate limit is what I want to know. by @pyama86 in https://github.com/k1LoW/rl/pull/39
+
 ## [v0.7.1](https://github.com/k1LoW/rl/compare/v0.7.0...v0.7.1) - 2023-11-24
 ### Fix bug 🐛
 - should check error before access rule by @pyama86 in https://github.com/k1LoW/rl/pull/37
