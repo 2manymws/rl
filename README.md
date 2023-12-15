@@ -1,12 +1,12 @@
-# rl [![Go Reference](https://pkg.go.dev/badge/github.com/k1LoW/rl.svg)](https://pkg.go.dev/github.com/k1LoW/rl) [![build](https://github.com/k1LoW/rl/actions/workflows/ci.yml/badge.svg)](https://github.com/k1LoW/rl/actions/workflows/ci.yml) ![Coverage](https://raw.githubusercontent.com/k1LoW/octocovs/main/badges/k1LoW/rl/coverage.svg) ![Code to Test Ratio](https://raw.githubusercontent.com/k1LoW/octocovs/main/badges/k1LoW/rl/ratio.svg) ![Test Execution Time](https://raw.githubusercontent.com/k1LoW/octocovs/main/badges/k1LoW/rl/time.svg)
+# rl [![Go Reference](https://pkg.go.dev/badge/github.com/2manymws/rl.svg)](https://pkg.go.dev/github.com/2manymws/rl) [![build](https://github.com/2manymws/rl/actions/workflows/ci.yml/badge.svg)](https://github.com/2manymws/rl/actions/workflows/ci.yml) ![Coverage](https://raw.githubusercontent.com/k1LoW/octocovs/main/badges/k1LoW/rl/coverage.svg) ![Code to Test Ratio](https://raw.githubusercontent.com/k1LoW/octocovs/main/badges/k1LoW/rl/ratio.svg) ![Test Execution Time](https://raw.githubusercontent.com/k1LoW/octocovs/main/badges/k1LoW/rl/time.svg)
 
 `rl` is a **r**ate **l**imit middleware for multiple limit rules.
 
 ## Usage
 
-Prepare an instance that implements [`rl.Limiter`](https://pkg.go.dev/github.com/k1LoW/rl#Limiter) interface.
+Prepare an instance that implements [`rl.Limiter`](https://pkg.go.dev/github.com/2manymws/rl#Limiter) interface.
 
-Then, generate the middleware ( `func(next http.Handler) http.Handler` ) with [`rl.New`](https://pkg.go.dev/github.com/k1LoW/rl#New)
+Then, generate the middleware ( `func(next http.Handler) http.Handler` ) with [`rl.New`](https://pkg.go.dev/github.com/2manymws/rl#New)
 
 ```go
 package main
@@ -15,7 +15,7 @@ import (
     "log"
     "net/http"
 
-    "github.com/k1LoW/rl"
+    "github.com/2manymws/rl"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module github.com/k1LoW/rl
+module github.com/2manymws/rl
 
 go 1.21.0
 

@@ -7,9 +7,9 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/2manymws/rl"
+	"github.com/2manymws/rl/testutil"
 	"github.com/go-chi/httprate"
-	"github.com/k1LoW/rl"
-	"github.com/k1LoW/rl/testutil"
 )
 
 func main() {

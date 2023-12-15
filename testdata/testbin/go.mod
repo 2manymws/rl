@@ -1,4 +1,4 @@
-module github.com/k1LoW/rl/testdata/testbin
+module github.com/2manymws/rl/testdata/testbin
 
 go 1.21.1
 

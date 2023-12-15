@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/2manymws/rl"
 	"github.com/go-chi/httprate"
-	"github.com/k1LoW/rl"
 )
 
 type Limiter struct {
