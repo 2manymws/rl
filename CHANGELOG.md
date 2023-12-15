@@ -1,5 +1,7 @@
 # Changelog
 
+## [v0.9.1](https://github.com/2manymws/rl/compare/v0.9.0...v0.9.1) - 2023-12-15
+
 ## [v0.9.0](https://github.com/k1LoW/rl/compare/v0.8.0...v0.9.0) - 2023-12-02
 ### Other Changes
 - Bump up version of golang.org/x/sync by @k1LoW in https://github.com/k1LoW/rl/pull/41
