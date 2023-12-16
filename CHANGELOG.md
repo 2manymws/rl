@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.10.0](https://github.com/2manymws/rl/compare/v0.9.1...v0.10.0) - 2023-12-16
+### Breaking Changes 🛠
+- Split interface Limiter and port default Counter from github.com/k1LoW/rlutil by @k1LoW in https://github.com/2manymws/rl/pull/45
+### Other Changes
+- Fix badge URL by @k1LoW in https://github.com/2manymws/rl/pull/47
+
 ## [v0.9.1](https://github.com/2manymws/rl/compare/v0.9.0...v0.9.1) - 2023-12-15
 
 ## [v0.9.0](https://github.com/k1LoW/rl/compare/v0.8.0...v0.9.0) - 2023-12-02
