@@ -34,13 +34,13 @@ func DisableAutoDeleteExpired() Option {
 }
 
 // NewCounter creates a new Counter
-func New(windowLen time.Duration, opts ...Option) *Counter {
+func New(ttl time.Duration, opts ...Option) *Counter {
 	c := &Counter{}
 	for _, opt := range opts {
 		opt(c)
 	}
 	ttlOpts := []ttlcache.Option[string, *uint64]{
-		ttlcache.WithTTL[string, *uint64](windowLen * 2),
+		ttlcache.WithTTL[string, *uint64](ttl),
 	}
 	if c.capacity > 0 {
 		ttlOpts = append(ttlOpts, ttlcache.WithCapacity[string, *uint64](c.capacity))

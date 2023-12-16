@@ -44,6 +44,8 @@ type Counter interface {
 	Increment(key string, currWindow time.Time) error
 }
 
+var _ Counter = (*counter.Counter)(nil)
+
 type limiter struct {
 	Limiter
 	Get       func(key string, window time.Time) (count int, err error) //nostyle:getters
@@ -51,7 +53,7 @@ type limiter struct {
 }
 
 func newLimiter(l Limiter) *limiter {
-	const defaultWindowLen = 1 * time.Hour
+	const defaultTTL = 1 * time.Hour
 	ll := &limiter{
 		Limiter: l,
 	}
@@ -59,12 +61,12 @@ func newLimiter(l Limiter) *limiter {
 		ll.Get = c.Get
 		ll.Increment = c.Increment
 	} else {
-		dl := defaultWindowLen
+		ttl := defaultTTL
 		r, err := ll.Rule(&http.Request{})
-		if err == nil {
-			dl = r.WindowLen
+		if err == nil && r.WindowLen > 0 {
+			ttl = r.WindowLen * 2
 		}
-		cc := counter.New(dl)
+		cc := counter.New(ttl)
 		ll.Get = cc.Get
 		ll.Increment = cc.Increment
 	}
