@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/2manymws/rl/counter"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -34,18 +35,47 @@ type Limiter interface {
 	ShouldSetXRateLimitHeaders(*Context) bool
 	// OnRequestLimit returns the handler to be called when the rate limit is exceeded
 	OnRequestLimit(*Context) http.HandlerFunc
+}
 
+type Counter interface {
 	// Get returns the current count for the key and window
 	Get(key string, window time.Time) (count int, err error) //nostyle:getters
 	// Increment increments the count for the key and window
 	Increment(key string, currWindow time.Time) error
 }
 
+type limiter struct {
+	Limiter
+	Get       func(key string, window time.Time) (count int, err error) //nostyle:getters
+	Increment func(key string, currWindow time.Time) error
+}
+
+func newLimiter(l Limiter) *limiter {
+	const defaultWindowLen = 1 * time.Hour
+	ll := &limiter{
+		Limiter: l,
+	}
+	if c, ok := l.(Counter); ok {
+		ll.Get = c.Get
+		ll.Increment = c.Increment
+	} else {
+		dl := defaultWindowLen
+		r, err := ll.Rule(&http.Request{})
+		if err == nil {
+			dl = r.WindowLen
+		}
+		cc := counter.New(dl)
+		ll.Get = cc.Get
+		ll.Increment = cc.Increment
+	}
+	return ll
+}
+
 type limitHandler struct {
 	key                string
 	reqLimit           int
 	windowLen          time.Duration
-	limiter            Limiter
+	limiter            *limiter
 	rateLimitRemaining int
 	rateLimitReset     int
 	mu                 sync.Mutex
@@ -69,12 +99,16 @@ func (lh *limitHandler) status(now, currWindow time.Time) (float64, error) {
 }
 
 type limitMw struct {
-	limiters []Limiter
+	limiters []*limiter
 }
 
 func newLimitMw(limiters []Limiter) *limitMw {
+	var ls []*limiter
+	for _, l := range limiters {
+		ls = append(ls, newLimiter(l))
+	}
 	return &limitMw{
-		limiters: limiters,
+		limiters: ls,
 	}
 }
 
@@ -83,8 +117,8 @@ func (lm *limitMw) Handler(next http.Handler) http.Handler {
 		now := time.Now().UTC()
 		var lastLH *limitHandler
 		eg, ctx := errgroup.WithContext(context.Background())
-		for _, limiter := range lm.limiters {
-			rule, err := limiter.Rule(r)
+		for _, l := range lm.limiters {
+			rule, err := l.Rule(r)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusPreconditionRequired)
 				return
@@ -102,7 +136,7 @@ func (lm *limitMw) Handler(next http.Handler) http.Handler {
 				key:       rule.Key,
 				reqLimit:  rule.ReqLimit,
 				windowLen: rule.WindowLen,
-				limiter:   limiter,
+				limiter:   l,
 			}
 			lastLH = lh
 			eg.Go(func() error {
