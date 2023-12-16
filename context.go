@@ -13,7 +13,7 @@ var ErrRateLimitExceeded error = errors.New("rate limit exceeded")
 type Context struct {
 	StatusCode         int
 	Err                error
-	Limiter            Limiter
+	Limiter            *limiter
 	RequestLimit       int
 	WindowLen          time.Duration
 	RateLimitRemaining int

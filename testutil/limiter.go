@@ -10,7 +10,6 @@ import (
 )
 
 type Limiter struct {
-	counts      map[string]map[time.Time]int
 	reqLimit    int
 	keyFunc     httprate.KeyFunc
 	statusCode  int
@@ -23,7 +22,6 @@ func KeyByHost(r *http.Request) (string, error) {
 
 func NewLimiter(reqLimit int, keyFunc httprate.KeyFunc, statusCode int) *Limiter {
 	return &Limiter{
-		counts:      map[string]map[time.Time]int{},
 		reqLimit:    reqLimit,
 		keyFunc:     keyFunc,
 		statusCode:  statusCode,
@@ -33,7 +31,6 @@ func NewLimiter(reqLimit int, keyFunc httprate.KeyFunc, statusCode int) *Limiter
 
 func NewSkipper(hostname string) *Limiter {
 	return &Limiter{
-		counts:      map[string]map[time.Time]int{},
 		reqLimit:    -1,
 		keyFunc:     KeyByHost,
 		statusCode:  0,
@@ -72,27 +69,4 @@ func (l *Limiter) OnRequestLimit(le *rl.Context) http.HandlerFunc {
 		msg := fmt.Sprintf("Too many requests. name: %s, ratelimit: %d req/%s, ratelimit-ramaining: %d, ratelimit-reset: %d", le.Limiter.Name(), le.RequestLimit, le.WindowLen, le.RateLimitRemaining, le.RateLimitReset)
 		_, _ = w.Write([]byte(msg)) //nostyle:handlerrors
 	}
-}
-
-func (l *Limiter) Get(key string, window time.Time) (count int, err error) { //nostyle:getters
-	if _, ok := l.counts[key]; !ok {
-		l.counts[key] = map[time.Time]int{}
-		return 0, nil
-	}
-	if _, ok := l.counts[key][window]; !ok {
-		l.counts[key][window] = 0
-		return 0, nil
-	}
-	return l.counts[key][window], nil
-}
-
-func (l *Limiter) Increment(key string, currentWindow time.Time) error {
-	if _, ok := l.counts[key]; !ok {
-		l.counts[key] = map[time.Time]int{}
-	}
-	if _, ok := l.counts[key][currentWindow]; !ok {
-		l.counts[key][currentWindow] = 0
-	}
-	l.counts[key][currentWindow]++
-	return nil
 }
